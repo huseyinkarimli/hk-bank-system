@@ -9,6 +9,8 @@ import az.hkbank.module.audit.service.AuditService;
 import az.hkbank.module.card.entity.Card;
 import az.hkbank.module.card.entity.CardStatus;
 import az.hkbank.module.card.repository.CardRepository;
+import az.hkbank.module.notification.entity.NotificationType;
+import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.transaction.dto.*;
 import az.hkbank.module.transaction.entity.Transaction;
 import az.hkbank.module.transaction.entity.TransactionStatus;
@@ -51,6 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final FraudDetectionService fraudDetectionService;
     private final TransactionLimitService transactionLimitService;
     private final AuditService auditService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -316,6 +319,13 @@ public class TransactionServiceImpl implements TransactionService {
                             " -> " + convertedAmount + " " + receiverAccount.getCurrencyType() +
                             " - " + savedTransaction.getReferenceNumber(),
                     ipAddress);
+
+            notificationService.createNotification(
+                    userId,
+                    NotificationType.TRANSACTION,
+                    "Köçürmə uğurla tamamlandı",
+                    "Köçürmə uğurla tamamlandı: " + amount + " " + senderAccount.getCurrencyType()
+            );
 
             log.info("Transfer completed successfully: {}", savedTransaction.getReferenceNumber());
 

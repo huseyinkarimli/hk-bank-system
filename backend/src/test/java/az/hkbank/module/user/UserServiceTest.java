@@ -4,6 +4,7 @@ import az.hkbank.common.exception.BankException;
 import az.hkbank.common.exception.ErrorCode;
 import az.hkbank.config.jwt.JwtService;
 import az.hkbank.module.audit.service.AuditService;
+import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.user.dto.AuthResponse;
 import az.hkbank.module.user.dto.LoginRequest;
 import az.hkbank.module.user.dto.RegisterRequest;
@@ -48,6 +49,9 @@ class UserServiceTest {
 
     @Mock
     private AuditService auditService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @Mock
     private HttpServletRequest httpServletRequest;
@@ -153,6 +157,7 @@ class UserServiceTest {
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
         when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        doNothing().when(notificationService).createNotification(anyLong(), any(), anyString(), anyString());
 
         AuthResponse response = userService.login(loginRequest);
 

@@ -7,6 +7,8 @@ import az.hkbank.module.account.entity.AccountStatus;
 import az.hkbank.module.account.repository.AccountRepository;
 import az.hkbank.module.audit.service.AuditAction;
 import az.hkbank.module.audit.service.AuditService;
+import az.hkbank.module.notification.entity.NotificationType;
+import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.payment.dto.PaymentRequest;
 import az.hkbank.module.payment.dto.PaymentResponse;
 import az.hkbank.module.payment.dto.PaymentSummaryResponse;
@@ -47,6 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final ProviderSimulationService providerSimulationService;
     private final AuditService auditService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -120,6 +123,13 @@ public class PaymentServiceImpl implements PaymentService {
                         "Payment completed: " + request.getAmount() + " AZN to " +
                                 request.getProviderName() + " - " + savedPayment.getReferenceNumber(),
                         ipAddress);
+
+                notificationService.createNotification(
+                        userId,
+                        NotificationType.PAYMENT,
+                        "Ödəniş uğurla tamamlandı",
+                        "Ödəniş uğurla tamamlandı: " + request.getProviderName() + " - " + request.getAmount() + " AZN"
+                );
 
                 log.info("Payment completed successfully: {}", savedPayment.getReferenceNumber());
 

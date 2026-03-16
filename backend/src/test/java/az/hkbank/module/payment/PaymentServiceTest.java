@@ -7,6 +7,7 @@ import az.hkbank.module.account.entity.AccountStatus;
 import az.hkbank.module.account.entity.CurrencyType;
 import az.hkbank.module.account.repository.AccountRepository;
 import az.hkbank.module.audit.service.AuditService;
+import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.payment.dto.PaymentRequest;
 import az.hkbank.module.payment.dto.PaymentResponse;
 import az.hkbank.module.payment.dto.PaymentSummaryResponse;
@@ -57,6 +58,9 @@ class PaymentServiceTest {
 
     @Mock
     private AuditService auditService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private PaymentServiceImpl paymentService;
@@ -144,6 +148,7 @@ class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(paymentMapper.toPaymentResponse(any(Payment.class))).thenReturn(paymentResponse);
         doNothing().when(auditService).log(anyLong(), anyString(), anyString(), anyString());
+        doNothing().when(notificationService).createNotification(anyLong(), any(), anyString(), anyString());
 
         PaymentResponse response = paymentService.makePayment(1L, paymentRequest, "127.0.0.1");
 

@@ -13,6 +13,8 @@ import az.hkbank.module.card.entity.CardStatus;
 import az.hkbank.module.card.mapper.CardMapper;
 import az.hkbank.module.card.repository.CardRepository;
 import az.hkbank.module.card.service.CardService;
+import az.hkbank.module.notification.entity.NotificationType;
+import az.hkbank.module.notification.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,7 @@ public class CardServiceImpl implements CardService {
     private final CardMapper cardMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
+    private final NotificationService notificationService;
     private final HttpServletRequest httpServletRequest;
 
     @Override
@@ -195,6 +198,13 @@ public class CardServiceImpl implements CardService {
                 action,
                 description + " - " + CardNumberGenerator.maskCardNumber(card.getCardNumber()),
                 getClientIpAddress()
+        );
+
+        notificationService.createNotification(
+                userId,
+                NotificationType.CARD,
+                "Kart statusu dəyişdirildi",
+                "Kartınızın statusu dəyişdirildi: " + request.getStatus()
         );
 
         log.info("Card status updated successfully: {}", cardId);

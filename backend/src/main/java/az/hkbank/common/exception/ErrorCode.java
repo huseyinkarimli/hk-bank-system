@@ -41,6 +41,9 @@ public enum ErrorCode {
     PAYMENT_LIMIT_EXCEEDED(400, "Payment amount exceeds maximum limit"),
     PROVIDER_REJECTED(400, "Payment rejected by provider"),
     
+    NOTIFICATION_NOT_FOUND(404, "Notification not found"),
+    STATEMENT_GENERATION_FAILED(500, "Statement generation failed"),
+    
     UNAUTHORIZED(401, "Unauthorized access"),
     FORBIDDEN(403, "Access forbidden"),
     VALIDATION_ERROR(400, "Validation error"),

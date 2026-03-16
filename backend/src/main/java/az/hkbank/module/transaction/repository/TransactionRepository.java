@@ -116,4 +116,26 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
            "WHERE t.senderAccount.user.id = :userId OR t.receiverAccount.user.id = :userId " +
            "ORDER BY t.createdAt DESC")
     Page<Transaction> findByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * Finds transactions where the account is the sender within a date range.
+     *
+     * @param accountId the sender account ID
+     * @param from start date
+     * @param to end date
+     * @return list of transactions
+     */
+    @Query("SELECT t FROM Transaction t WHERE t.senderAccount.id = :accountId AND t.createdAt BETWEEN :from AND :to ORDER BY t.createdAt DESC")
+    List<Transaction> findBySenderAccountIdAndCreatedAtBetween(@Param("accountId") Long accountId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    /**
+     * Finds transactions where the account is the receiver within a date range.
+     *
+     * @param accountId the receiver account ID
+     * @param from start date
+     * @param to end date
+     * @return list of transactions
+     */
+    @Query("SELECT t FROM Transaction t WHERE t.receiverAccount.id = :accountId AND t.createdAt BETWEEN :from AND :to ORDER BY t.createdAt DESC")
+    List<Transaction> findByReceiverAccountIdAndCreatedAtBetween(@Param("accountId") Long accountId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

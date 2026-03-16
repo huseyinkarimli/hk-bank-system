@@ -11,6 +11,7 @@ import az.hkbank.module.card.entity.Card;
 import az.hkbank.module.card.entity.CardStatus;
 import az.hkbank.module.card.entity.CardType;
 import az.hkbank.module.card.repository.CardRepository;
+import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.transaction.dto.P2PCardTransferRequest;
 import az.hkbank.module.transaction.dto.P2PIbanTransferRequest;
 import az.hkbank.module.transaction.dto.TransactionResponse;
@@ -70,6 +71,9 @@ class TransactionServiceTest {
 
     @Mock
     private AuditService auditService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private TransactionServiceImpl transactionService;
@@ -260,6 +264,7 @@ class TransactionServiceTest {
         when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
         when(transactionMapper.toTransactionResponse(any(Transaction.class))).thenReturn(transactionResponse);
+        doNothing().when(notificationService).createNotification(anyLong(), any(), anyString(), anyString());
 
         TransactionResponse response = transactionService.transferByCard(1L, request, "127.0.0.1");
 
@@ -422,6 +427,7 @@ class TransactionServiceTest {
         when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
         when(transactionMapper.toTransactionResponse(any(Transaction.class))).thenReturn(transactionResponse);
+        doNothing().when(notificationService).createNotification(anyLong(), any(), anyString(), anyString());
 
         TransactionResponse response = transactionService.transferByIban(1L, request, "127.0.0.1");
 

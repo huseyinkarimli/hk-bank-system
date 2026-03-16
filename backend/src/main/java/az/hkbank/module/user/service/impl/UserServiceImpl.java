@@ -8,6 +8,8 @@ import az.hkbank.module.audit.service.AuditService;
 import az.hkbank.module.user.dto.*;
 import az.hkbank.module.user.entity.Role;
 import az.hkbank.module.user.entity.User;
+import az.hkbank.module.notification.entity.NotificationType;
+import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.user.mapper.UserMapper;
 import az.hkbank.module.user.repository.UserRepository;
 import az.hkbank.module.user.service.UserService;
@@ -38,6 +40,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuditService auditService;
+    private final NotificationService notificationService;
     private final HttpServletRequest httpServletRequest;
 
     @Override
@@ -98,11 +101,20 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         String token = jwtService.generateToken(user);
 
+        String ipAddress = getClientIpAddress();
+
         auditService.log(
                 user.getId(),
                 AuditAction.LOGIN,
                 "User logged in successfully",
-                getClientIpAddress()
+                ipAddress
+        );
+
+        notificationService.createNotification(
+                user.getId(),
+                NotificationType.SECURITY,
+                "Yeni giriş",
+                "Hesabınıza yeni giriş edildi: " + ipAddress
         );
 
         log.info("User logged in successfully: {}", user.getEmail());
