@@ -35,6 +35,17 @@ public class AuditLog {
 
     private String ipAddress;
 
+    @Column(length = 50)
+    private String entityType;
+
+    private Long entityId;
+
+    @Column(length = 2000)
+    private String oldValue;
+
+    @Column(length = 2000)
+    private String newValue;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
