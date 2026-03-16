@@ -44,6 +44,9 @@ public enum ErrorCode {
     NOTIFICATION_NOT_FOUND(404, "Notification not found"),
     STATEMENT_GENERATION_FAILED(500, "Statement generation failed"),
     
+    CHAT_SESSION_NOT_FOUND(404, "Chat session not found"),
+    AI_SERVICE_UNAVAILABLE(503, "AI service is temporarily unavailable"),
+    
     UNAUTHORIZED(401, "Unauthorized access"),
     FORBIDDEN(403, "Access forbidden"),
     VALIDATION_ERROR(400, "Validation error"),
