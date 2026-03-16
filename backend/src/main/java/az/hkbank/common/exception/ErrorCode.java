@@ -14,11 +14,18 @@ public enum ErrorCode {
     INVALID_CREDENTIALS(401, "Invalid credentials"),
     
     ACCOUNT_NOT_FOUND(404, "Account not found"),
+    ACCOUNT_ALREADY_EXISTS(409, "Account already exists for this currency"),
+    ACCOUNT_BLOCKED(403, "Account is blocked"),
+    ACCOUNT_CLOSED(403, "Account is closed"),
     INSUFFICIENT_BALANCE(400, "Insufficient balance"),
+    UNAUTHORIZED_ACCOUNT_ACCESS(403, "Unauthorized access to account"),
     
     CARD_NOT_FOUND(404, "Card not found"),
     CARD_BLOCKED(403, "Card is blocked"),
     CARD_FROZEN(403, "Card is frozen"),
+    CARD_LIMIT_EXCEEDED(400, "Card limit exceeded for this account"),
+    INVALID_PIN(401, "Invalid PIN"),
+    UNAUTHORIZED_CARD_ACCESS(403, "Unauthorized access to card"),
     
     TRANSACTION_FAILED(500, "Transaction failed"),
     DAILY_LIMIT_EXCEEDED(400, "Daily limit exceeded"),
