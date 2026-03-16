@@ -28,6 +28,9 @@ public enum ErrorCode {
     UNAUTHORIZED_CARD_ACCESS(403, "Unauthorized access to card"),
     
     TRANSACTION_FAILED(500, "Transaction failed"),
+    TRANSACTION_NOT_FOUND(404, "Transaction not found"),
+    INVALID_TRANSACTION_AMOUNT(400, "Invalid transaction amount"),
+    SAME_ACCOUNT_TRANSFER(400, "Cannot transfer to the same account"),
     DAILY_LIMIT_EXCEEDED(400, "Daily limit exceeded"),
     FRAUD_DETECTED(403, "Fraud detected"),
     

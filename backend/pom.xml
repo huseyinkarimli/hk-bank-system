@@ -110,6 +110,16 @@
             <version>2.7.0</version>
         </dependency>
 
+        <!-- ==================== CAFFEINE CACHE ==================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- ==================== PDF (iText7) ==================== -->
         <dependency>
             <groupId>com.itextpdf</groupId>
