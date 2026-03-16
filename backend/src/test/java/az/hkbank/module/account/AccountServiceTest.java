@@ -67,9 +67,9 @@ class AccountServiceTest {
     void setUp() {
         user = User.builder()
                 .id(1L)
-                .firstName("John")
-                .lastName("Doe")
-                .email("john.doe@hkbank.az")
+                .firstName("Huseyin")
+                .lastName("Karimli")
+                .email("huseyin.karimli@hkbank.az")
                 .password("$2a$10$encodedPassword")
                 .phoneNumber("+994501234567")
                 .role(Role.USER)

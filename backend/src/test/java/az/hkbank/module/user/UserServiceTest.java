@@ -62,23 +62,23 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         registerRequest = RegisterRequest.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .email("john.doe@example.com")
+                .firstName("Huseyin")
+                .lastName("Karimli")
+                .email("huseyin.karimli@hkbank.az")
                 .password("password123")
                 .phoneNumber("+994501234567")
                 .build();
 
         loginRequest = LoginRequest.builder()
-                .email("john.doe@example.com")
+                .email("huseyin.karimli@hkbank.az")
                 .password("password123")
                 .build();
 
         user = User.builder()
                 .id(1L)
-                .firstName("John")
-                .lastName("Doe")
-                .email("john.doe@example.com")
+                .firstName("Huseyin")
+                .lastName("Karimli")
+                .email("huseyin.karimli@hkbank.az")
                 .password("$2a$10$encodedPassword")
                 .phoneNumber("+994501234567")
                 .role(Role.USER)
@@ -103,9 +103,9 @@ class UserServiceTest {
         assertNotNull(response);
         assertEquals("jwt-token", response.getToken());
         assertEquals("Bearer", response.getTokenType());
-        assertEquals("john.doe@example.com", response.getEmail());
-        assertEquals("John", response.getFirstName());
-        assertEquals("Doe", response.getLastName());
+        assertEquals("huseyin.karimli@hkbank.az", response.getEmail());
+        assertEquals("Huseyin", response.getFirstName());
+        assertEquals("Karimli", response.getLastName());
         assertEquals(Role.USER, response.getRole());
 
         verify(userRepository).existsByEmail(registerRequest.getEmail());
@@ -159,7 +159,7 @@ class UserServiceTest {
         assertNotNull(response);
         assertEquals("jwt-token", response.getToken());
         assertEquals("Bearer", response.getTokenType());
-        assertEquals("john.doe@example.com", response.getEmail());
+        assertEquals("huseyin.karimli@hkbank.az", response.getEmail());
 
         verify(userRepository).findByEmail(loginRequest.getEmail());
         verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPassword());

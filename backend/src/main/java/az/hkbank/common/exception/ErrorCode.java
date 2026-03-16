@@ -36,6 +36,11 @@ public enum ErrorCode {
     
     CURRENCY_NOT_SUPPORTED(400, "Currency not supported"),
     
+    PAYMENT_NOT_FOUND(404, "Payment not found"),
+    PAYMENT_FAILED(500, "Payment failed"),
+    PAYMENT_LIMIT_EXCEEDED(400, "Payment amount exceeds maximum limit"),
+    PROVIDER_REJECTED(400, "Payment rejected by provider"),
+    
     UNAUTHORIZED(401, "Unauthorized access"),
     FORBIDDEN(403, "Access forbidden"),
     VALIDATION_ERROR(400, "Validation error"),
