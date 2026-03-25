@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 
         ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
                 .success(false)
-                .message("Validation failed")
+                .message("Məlumatların yoxlanılması uğursuz oldu")
                 .data(errors)
                 .timestamp(java.time.LocalDateTime.now())
                 .build();
@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException ex) {
         log.error("Access denied: {}", ex.getMessage());
         
-        ApiResponse<Void> response = ApiResponse.error("Access forbidden");
+        ApiResponse<Void> response = ApiResponse.error("Bu əməliyyat üçün icazəniz yoxdur");
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(response);
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
         log.error("Unexpected error: ", ex);
         
-        ApiResponse<Void> response = ApiResponse.error("An unexpected error occurred");
+        ApiResponse<Void> response = ApiResponse.error("Gözlənilməz xəta baş verdi");
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);

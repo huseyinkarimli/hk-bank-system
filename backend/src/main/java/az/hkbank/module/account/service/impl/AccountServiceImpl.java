@@ -112,7 +112,7 @@ public class AccountServiceImpl implements AccountService {
 
         return accounts.stream()
                 .map(accountMapper::toAccountSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -201,7 +201,7 @@ public class AccountServiceImpl implements AccountService {
 
         return accounts.stream()
                 .map(accountMapper::toAccountSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package az.hkbank.common.util;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * Utility class for generating and managing card numbers.
@@ -9,7 +9,7 @@ import java.util.Random;
 public final class CardNumberGenerator {
 
     private static final String BIN = "44222007";
-    private static final Random RANDOM = new Random();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private CardNumberGenerator() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");

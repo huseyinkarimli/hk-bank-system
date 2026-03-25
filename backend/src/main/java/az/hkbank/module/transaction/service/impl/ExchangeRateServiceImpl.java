@@ -30,7 +30,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Value("${app.exchange-api.key:demo}")
     private String exchangeApiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Override
     @Cacheable(value = "exchangeRates", key = "#from + '_' + #to")

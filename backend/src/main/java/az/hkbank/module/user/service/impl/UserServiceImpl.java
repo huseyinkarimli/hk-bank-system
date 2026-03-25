@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of UserService interface.
@@ -211,7 +210,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         return userRepository.findAll().stream()
                 .map(userMapper::toUserResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

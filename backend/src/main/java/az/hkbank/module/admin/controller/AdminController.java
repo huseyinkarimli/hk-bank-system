@@ -471,7 +471,7 @@ public class AdminController {
         List<AuditLogResponse> auditLogs = auditLogRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(auditLogMapper::toAuditLogResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(ApiResponse.success(auditLogs));
     }
@@ -492,7 +492,7 @@ public class AdminController {
         List<AuditLogResponse> auditLogs = auditLogRepository.findByAction(action)
                 .stream()
                 .map(auditLogMapper::toAuditLogResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(ApiResponse.success(auditLogs));
     }

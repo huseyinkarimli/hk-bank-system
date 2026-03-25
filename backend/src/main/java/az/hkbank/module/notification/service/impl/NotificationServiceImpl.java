@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of NotificationService interface.
@@ -66,7 +65,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         return notifications.stream()
                 .map(notificationMapper::toNotificationResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -78,7 +77,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         return notifications.stream()
                 .map(notificationMapper::toNotificationResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

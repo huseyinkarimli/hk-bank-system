@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of CardService interface.
@@ -145,7 +144,7 @@ public class CardServiceImpl implements CardService {
         return cards.stream()
                 .filter(card -> !card.isDeleted())
                 .map(cardMapper::toCardSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -164,7 +163,7 @@ public class CardServiceImpl implements CardService {
 
         return cards.stream()
                 .map(cardMapper::toCardSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -288,7 +287,7 @@ public class CardServiceImpl implements CardService {
 
         return cards.stream()
                 .map(cardMapper::toCardSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

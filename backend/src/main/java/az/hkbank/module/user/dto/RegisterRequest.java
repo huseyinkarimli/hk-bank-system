@@ -2,6 +2,7 @@ package az.hkbank.module.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,6 +35,6 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank(message = "Phone number is required")
-    @Size(min = 10, max = 20, message = "Phone number must be between 10 and 20 characters")
+    @Pattern(regexp = "^\\+994[0-9]{9}$", message = "Phone number must be in format +994XXXXXXXXX")
     private String phoneNumber;
 }

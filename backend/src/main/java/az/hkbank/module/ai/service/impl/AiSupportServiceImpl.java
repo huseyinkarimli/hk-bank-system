@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of AiSupportService interface.
@@ -118,7 +117,7 @@ public class AiSupportServiceImpl implements AiSupportService {
 
         return messages.stream()
                 .map(chatMapper::toChatMessageResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -135,7 +134,7 @@ public class AiSupportServiceImpl implements AiSupportService {
                     response.setMessageCount(messageCount);
                     return response;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

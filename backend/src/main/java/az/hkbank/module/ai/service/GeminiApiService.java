@@ -29,7 +29,7 @@ import java.util.List;
 public class GeminiApiService {
 
     private final GeminiProperties geminiProperties;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final Gson gson = new Gson();
 
     /**
@@ -45,6 +45,9 @@ public class GeminiApiService {
         try {
             String requestBody = buildRequestBody(history, userMessage);
             String url = geminiProperties.getApiUrl() + "?key=" + geminiProperties.getApiKey();
+            
+            log.debug("Gemini API URL: {}", geminiProperties.getApiUrl());
+            log.debug("Request body length: {} characters", requestBody.length());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -59,16 +62,18 @@ public class GeminiApiService {
             );
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                log.debug("Gemini API response received successfully");
                 return parseResponse(response.getBody());
             } else {
-                log.error("Gemini API returned non-OK status: {}", response.getStatusCode());
+                log.error("Gemini API returned non-OK status: {}, body: {}", 
+                        response.getStatusCode(), response.getBody());
                 throw new BankException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI service returned error status");
             }
 
         } catch (BankException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Failed to communicate with Gemini API", e);
+            log.error("Failed to communicate with Gemini API: {}", e.getMessage(), e);
             throw new BankException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI service is temporarily unavailable");
         }
     }
@@ -130,6 +135,7 @@ public class GeminiApiService {
 
     private String parseResponse(String responseBody) {
         try {
+            log.debug("Parsing Gemini API response, length: {} characters", responseBody.length());
             JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
 
             if (jsonResponse.has("candidates") && jsonResponse.getAsJsonArray("candidates").size() > 0) {
@@ -139,15 +145,20 @@ public class GeminiApiService {
 
                 if (parts.size() > 0) {
                     JsonObject part = parts.get(0).getAsJsonObject();
-                    return part.get("text").getAsString();
+                    String text = part.get("text").getAsString();
+                    log.debug("Successfully extracted text from Gemini response");
+                    return text;
                 }
             }
 
-            log.error("Unexpected Gemini API response format: {}", responseBody);
+            log.error("Unexpected Gemini API response format. Response: {}", responseBody);
             throw new BankException(ErrorCode.AI_SERVICE_UNAVAILABLE, "Invalid AI response format");
 
+        } catch (BankException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Failed to parse Gemini API response", e);
+            log.error("Failed to parse Gemini API response: {}", e.getMessage(), e);
+            log.error("Response body: {}", responseBody);
             throw new BankException(ErrorCode.AI_SERVICE_UNAVAILABLE, "Failed to parse AI response");
         }
     }

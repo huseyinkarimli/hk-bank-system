@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of PaymentService interface.
@@ -52,7 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final NotificationService notificationService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public PaymentResponse makePayment(Long userId, PaymentRequest request, String ipAddress) {
         log.info("Processing payment for user: {}, provider: {}, amount: {}",
                 userId, request.getProviderName(), request.getAmount());
@@ -195,7 +194,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         return payments.stream()
                 .map(paymentMapper::toPaymentSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -214,7 +213,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         return payments.stream()
                 .map(paymentMapper::toPaymentSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -240,7 +239,7 @@ public class PaymentServiceImpl implements PaymentService {
                         .providerType(entry.getKey())
                         .providers(entry.getValue())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

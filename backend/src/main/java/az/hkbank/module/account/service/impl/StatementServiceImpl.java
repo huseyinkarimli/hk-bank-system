@@ -41,7 +41,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of StatementService interface.
@@ -81,19 +80,19 @@ public class StatementServiceImpl implements StatementService {
 
         List<Payment> payments = paymentRepository.findByAccountId(accountId).stream()
                 .filter(p -> p.getCreatedAt().isAfter(from) && p.getCreatedAt().isBefore(to))
-                .collect(Collectors.toList());
+                .toList();
 
         List<TransactionSummaryResponse> transactionSummaries = new ArrayList<>();
         transactionSummaries.addAll(sentTransactions.stream()
                 .map(transactionMapper::toTransactionSummaryResponse)
-                .collect(Collectors.toList()));
+                .toList());
         transactionSummaries.addAll(receivedTransactions.stream()
                 .map(transactionMapper::toTransactionSummaryResponse)
-                .collect(Collectors.toList()));
+                .toList());
 
         List<PaymentSummaryResponse> paymentSummaries = payments.stream()
                 .map(paymentMapper::toPaymentSummaryResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         BigDecimal totalCredit = receivedTransactions.stream()
                 .filter(t -> t.getStatus() == TransactionStatus.SUCCESS)

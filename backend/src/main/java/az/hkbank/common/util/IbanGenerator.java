@@ -3,7 +3,7 @@ package az.hkbank.common.util;
 import az.hkbank.module.account.entity.CurrencyType;
 
 import java.math.BigInteger;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * Utility class for generating IBAN and account numbers.
@@ -13,7 +13,7 @@ public final class IbanGenerator {
 
     private static final String COUNTRY_CODE = "AZ";
     private static final String BANK_CODE = "HKBA";
-    private static final Random RANDOM = new Random();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private IbanGenerator() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");

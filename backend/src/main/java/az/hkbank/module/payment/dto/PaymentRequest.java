@@ -1,6 +1,7 @@
 package az.hkbank.module.payment.dto;
 
 import az.hkbank.module.payment.entity.ProviderType;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -35,6 +36,7 @@ public class PaymentRequest {
 
     @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be positive")
+    @DecimalMax(value = "500.00", message = "Payment amount cannot exceed 500.00")
     private BigDecimal amount;
 
     private String description;

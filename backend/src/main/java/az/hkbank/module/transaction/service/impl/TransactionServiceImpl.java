@@ -56,7 +56,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final NotificationService notificationService;
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public TransactionResponse transferByCard(Long userId, P2PCardTransferRequest request, String ipAddress) {
         log.info("Processing card transfer: {} -> {}, amount: {}",
                 request.getSourceCardNumber(), request.getTargetCardNumber(), request.getAmount());
@@ -109,7 +109,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public TransactionResponse transferByIban(Long userId, P2PIbanTransferRequest request, String ipAddress) {
         log.info("Processing IBAN transfer: {} -> {}, amount: {}",
                 request.getSourceIban(), request.getTargetIban(), request.getAmount());
