@@ -18,8 +18,10 @@ public interface TransactionMapper {
      * @param transaction the transaction entity
      * @return TransactionResponse DTO
      */
-    @Mapping(target = "senderAccountNumber", source = "senderAccount.accountNumber")
-    @Mapping(target = "receiverAccountNumber", source = "receiverAccount.accountNumber")
+    @Mapping(target = "senderAccountNumber",
+            expression = "java(transaction.getSenderAccount() != null ? transaction.getSenderAccount().getAccountNumber() : null)")
+    @Mapping(target = "receiverAccountNumber",
+            expression = "java(transaction.getReceiverAccount() != null ? transaction.getReceiverAccount().getAccountNumber() : null)")
     TransactionResponse toTransactionResponse(Transaction transaction);
 
     /**

@@ -2,9 +2,13 @@ package az.hkbank.module.transaction.service.impl;
 
 import az.hkbank.common.exception.BankException;
 import az.hkbank.common.exception.ErrorCode;
+import az.hkbank.module.account.dto.AccountResponse;
 import az.hkbank.module.account.entity.Account;
 import az.hkbank.module.account.entity.AccountStatus;
+import az.hkbank.module.account.mapper.AccountMapper;
 import az.hkbank.module.account.repository.AccountRepository;
+import az.hkbank.module.admin.dto.AdminFundRequest;
+import az.hkbank.module.audit.service.AuditAction;
 import az.hkbank.module.audit.service.AuditService;
 import az.hkbank.module.card.entity.Card;
 import az.hkbank.module.card.entity.CardStatus;
@@ -54,6 +58,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionLimitService transactionLimitService;
     private final AuditService auditService;
     private final NotificationService notificationService;
+    private final AccountMapper accountMapper;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -164,8 +169,11 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new BankException(ErrorCode.TRANSACTION_NOT_FOUND));
 
-        if (!transaction.getSenderAccount().getUser().getId().equals(userId) &&
-                !transaction.getReceiverAccount().getUser().getId().equals(userId)) {
+        boolean asSender = transaction.getSenderAccount() != null
+                && transaction.getSenderAccount().getUser().getId().equals(userId);
+        boolean asReceiver = transaction.getReceiverAccount() != null
+                && transaction.getReceiverAccount().getUser().getId().equals(userId);
+        if (!asSender && !asReceiver) {
             throw new BankException(ErrorCode.FORBIDDEN, "Unauthorized access to transaction");
         }
 
@@ -187,6 +195,94 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         return transactions.map(transactionMapper::toTransactionSummaryResponse);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AccountResponse adminDeposit(Long accountId, AdminFundRequest request, String ipAddress) {
+        log.info("Admin deposit to account {} amount {}", accountId, request.getAmount());
+
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new BankException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        if (account.isDeleted()) {
+            throw new BankException(ErrorCode.ACCOUNT_NOT_FOUND, "Account is deleted");
+        }
+
+        account.setBalance(account.getBalance().add(request.getAmount()));
+        Account savedAccount = accountRepository.save(account);
+
+        Transaction transaction = Transaction.builder()
+                .type(TransactionType.DEPOSIT)
+                .status(TransactionStatus.SUCCESS)
+                .amount(request.getAmount())
+                .convertedAmount(request.getAmount())
+                .sourceCurrency(account.getCurrencyType())
+                .targetCurrency(account.getCurrencyType())
+                .senderAccount(null)
+                .receiverAccount(savedAccount)
+                .description("Admin deposit: " + request.getDescription())
+                .ipAddress(ipAddress)
+                .completedAt(LocalDateTime.now())
+                .build();
+
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        auditService.log(
+                savedAccount.getUser().getId(),
+                AuditAction.ADMIN_DEPOSIT,
+                "Admin deposit " + request.getAmount() + " to account " + savedAccount.getId()
+                        + " - " + savedTransaction.getReferenceNumber(),
+                ipAddress
+        );
+
+        return accountMapper.toAccountResponse(savedAccount);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AccountResponse adminWithdraw(Long accountId, AdminFundRequest request, String ipAddress) {
+        log.info("Admin withdraw from account {} amount {}", accountId, request.getAmount());
+
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new BankException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        if (account.isDeleted()) {
+            throw new BankException(ErrorCode.ACCOUNT_NOT_FOUND, "Account is deleted");
+        }
+
+        if (account.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new BankException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+
+        account.setBalance(account.getBalance().subtract(request.getAmount()));
+        Account savedAccount = accountRepository.save(account);
+
+        Transaction transaction = Transaction.builder()
+                .type(TransactionType.WITHDRAWAL)
+                .status(TransactionStatus.SUCCESS)
+                .amount(request.getAmount())
+                .convertedAmount(request.getAmount())
+                .sourceCurrency(account.getCurrencyType())
+                .targetCurrency(account.getCurrencyType())
+                .senderAccount(savedAccount)
+                .receiverAccount(null)
+                .description("Admin withdrawal: " + request.getDescription())
+                .ipAddress(ipAddress)
+                .completedAt(LocalDateTime.now())
+                .build();
+
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        auditService.log(
+                savedAccount.getUser().getId(),
+                AuditAction.ADMIN_WITHDRAWAL,
+                "Admin withdrawal " + request.getAmount() + " from account " + savedAccount.getId()
+                        + " - " + savedTransaction.getReferenceNumber(),
+                ipAddress
+        );
+
+        return accountMapper.toAccountResponse(savedAccount);
     }
 
     @Override

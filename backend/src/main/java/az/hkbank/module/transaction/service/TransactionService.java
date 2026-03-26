@@ -1,5 +1,7 @@
 package az.hkbank.module.transaction.service;
 
+import az.hkbank.module.account.dto.AccountResponse;
+import az.hkbank.module.admin.dto.AdminFundRequest;
 import az.hkbank.module.transaction.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,4 +66,24 @@ public interface TransactionService {
      * @return page of transaction summaries
      */
     Page<TransactionSummaryResponse> getAllTransactions(Pageable pageable);
+
+    /**
+     * Admin credits an account balance and records a DEPOSIT transaction.
+     *
+     * @param accountId target account ID
+     * @param request   amount and description
+     * @param ipAddress client IP for audit and transaction record
+     * @return updated account
+     */
+    AccountResponse adminDeposit(Long accountId, AdminFundRequest request, String ipAddress);
+
+    /**
+     * Admin debits an account balance and records a WITHDRAWAL transaction.
+     *
+     * @param accountId source account ID
+     * @param request   amount and description
+     * @param ipAddress client IP for audit and transaction record
+     * @return updated account
+     */
+    AccountResponse adminWithdraw(Long accountId, AdminFundRequest request, String ipAddress);
 }

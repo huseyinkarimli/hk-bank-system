@@ -57,11 +57,11 @@ public class Transaction {
     private CurrencyType targetCurrency;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_account_id", nullable = false)
+    @JoinColumn(name = "sender_account_id")
     private Account senderAccount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_account_id", nullable = false)
+    @JoinColumn(name = "receiver_account_id")
     private Account receiverAccount;
 
     @ManyToOne(fetch = FetchType.LAZY)

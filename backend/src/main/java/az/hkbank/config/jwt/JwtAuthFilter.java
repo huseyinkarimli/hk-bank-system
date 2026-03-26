@@ -2,6 +2,7 @@ package az.hkbank.config.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import az.hkbank.module.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+
+            Long userId = jwtService.extractUserId(jwt);
+            if (userId == null && userDetails instanceof User user) {
+                userId = user.getId();
+            }
+            if (userId != null && jwtService.isUserBanned(userId)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

@@ -54,4 +54,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u FROM User u WHERE u.isDeleted = false")
     List<User> findAll();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isDeleted = false")
+    long countByIsDeletedFalse();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isDeleted = true")
+    long countByIsDeletedTrue();
 }

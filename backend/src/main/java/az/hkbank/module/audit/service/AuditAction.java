@@ -17,6 +17,9 @@ public final class AuditAction {
     public static final String DAILY_LIMIT_RESET = "DAILY_LIMIT_RESET";
     public static final String SYSTEM_HEALTH_CHECK = "SYSTEM_HEALTH_CHECK";
 
+    public static final String ADMIN_DEPOSIT = "ADMIN_DEPOSIT";
+    public static final String ADMIN_WITHDRAWAL = "ADMIN_WITHDRAWAL";
+
     private AuditAction() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }

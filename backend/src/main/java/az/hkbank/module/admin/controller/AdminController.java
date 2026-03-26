@@ -8,6 +8,8 @@ import az.hkbank.module.account.entity.Account;
 import az.hkbank.module.account.mapper.AccountMapper;
 import az.hkbank.module.account.repository.AccountRepository;
 import az.hkbank.module.admin.dto.*;
+import az.hkbank.module.admin.service.AdminDashboardService;
+import az.hkbank.module.admin.service.AdminUserBanService;
 import az.hkbank.module.audit.dto.AuditLogResponse;
 import az.hkbank.module.audit.entity.AuditLog;
 import az.hkbank.module.audit.mapper.AuditLogMapper;
@@ -23,6 +25,7 @@ import az.hkbank.module.transaction.entity.Transaction;
 import az.hkbank.module.transaction.entity.TransactionStatus;
 import az.hkbank.module.transaction.mapper.TransactionMapper;
 import az.hkbank.module.transaction.repository.TransactionRepository;
+import az.hkbank.module.transaction.service.TransactionService;
 import az.hkbank.module.user.dto.UserResponse;
 import az.hkbank.module.user.entity.User;
 import az.hkbank.module.user.mapper.UserMapper;
@@ -74,6 +77,9 @@ public class AdminController {
     private final CardMapper cardMapper;
     private final AuditLogMapper auditLogMapper;
     private final AuditService auditService;
+    private final TransactionService transactionService;
+    private final AdminUserBanService adminUserBanService;
+    private final AdminDashboardService adminDashboardService;
     private final HttpServletRequest httpServletRequest;
 
     @GetMapping("/users")
@@ -118,6 +124,43 @@ public class AdminController {
                 .orElseThrow(() -> new BankException(ErrorCode.USER_NOT_FOUND));
 
         return ResponseEntity.ok(ApiResponse.success(userMapper.toUserResponse(user)));
+    }
+
+    @PutMapping("/users/{userId}/ban")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Ban user", description = "Soft-deletes user, blocks all cards, rejects JWT, notifies user")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "User banned",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "User not found"
+            )
+    })
+    public ResponseEntity<ApiResponse<String>> banUser(
+            @PathVariable Long userId,
+            @Valid @RequestBody BanUserRequest request) {
+        log.info("Admin banning user: {}", userId);
+        adminUserBanService.banUser(userId, request.getReason(), getClientIpAddress());
+        return ResponseEntity.ok(ApiResponse.success("İstifadəçi uğurla banlandı"));
+    }
+
+    @GetMapping("/dashboard/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Dashboard statistics", description = "Aggregated users, cards, transactions, and total AZN balance")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Statistics retrieved",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            )
+    })
+    public ResponseEntity<ApiResponse<AdminDashboardStatsResponse>> getDashboardStats() {
+        log.info("Admin fetching dashboard statistics");
+        return ResponseEntity.ok(ApiResponse.success(adminDashboardService.getDashboardStats()));
     }
 
     @PutMapping("/users/{id}/role")
@@ -240,6 +283,52 @@ public class AdminController {
                 .orElseThrow(() -> new BankException(ErrorCode.ACCOUNT_NOT_FOUND));
 
         return ResponseEntity.ok(ApiResponse.success(accountMapper.toAccountResponse(account)));
+    }
+
+    @PostMapping("/accounts/{accountId}/deposit")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Admin deposit", description = "Credits an account balance and records a DEPOSIT transaction")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Deposit completed",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "Account not found"
+            )
+    })
+    public ResponseEntity<ApiResponse<AccountResponse>> adminDeposit(
+            @PathVariable Long accountId,
+            @Valid @RequestBody AdminFundRequest request) {
+        log.info("Admin deposit to account: {}", accountId);
+
+        AccountResponse updated = transactionService.adminDeposit(accountId, request, getClientIpAddress());
+        return ResponseEntity.ok(ApiResponse.success(updated));
+    }
+
+    @PostMapping("/accounts/{accountId}/withdraw")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Admin withdrawal", description = "Debits an account balance and records a WITHDRAWAL transaction")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Withdrawal completed",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "Account not found"
+            )
+    })
+    public ResponseEntity<ApiResponse<AccountResponse>> adminWithdraw(
+            @PathVariable Long accountId,
+            @Valid @RequestBody AdminFundRequest request) {
+        log.info("Admin withdrawal from account: {}", accountId);
+
+        AccountResponse updated = transactionService.adminWithdraw(accountId, request, getClientIpAddress());
+        return ResponseEntity.ok(ApiResponse.success(updated));
     }
 
     @PutMapping("/accounts/{id}/status")

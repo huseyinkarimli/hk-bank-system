@@ -95,7 +95,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @return page of transactions
      */
     @Query("SELECT t FROM Transaction t " +
-           "WHERE (t.senderAccount.user.id = :userId OR t.receiverAccount.user.id = :userId) " +
+           "WHERE ((t.senderAccount IS NOT NULL AND t.senderAccount.user.id = :userId) " +
+           "OR (t.receiverAccount IS NOT NULL AND t.receiverAccount.user.id = :userId)) " +
            "AND t.createdAt BETWEEN :from AND :to " +
            "ORDER BY t.createdAt DESC")
     Page<Transaction> findByUserIdAndDateRange(
@@ -113,7 +114,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @return page of transactions
      */
     @Query("SELECT t FROM Transaction t " +
-           "WHERE t.senderAccount.user.id = :userId OR t.receiverAccount.user.id = :userId " +
+           "WHERE (t.senderAccount IS NOT NULL AND t.senderAccount.user.id = :userId) " +
+           "OR (t.receiverAccount IS NOT NULL AND t.receiverAccount.user.id = :userId) " +
            "ORDER BY t.createdAt DESC")
     Page<Transaction> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
@@ -138,4 +140,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      */
     @Query("SELECT t FROM Transaction t WHERE t.receiverAccount.id = :accountId AND t.createdAt BETWEEN :from AND :to ORDER BY t.createdAt DESC")
     List<Transaction> findByReceiverAccountIdAndCreatedAtBetween(@Param("accountId") Long accountId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    long countByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+           "WHERE t.createdAt BETWEEN :from AND :to AND t.status = 'SUCCESS'")
+    BigDecimal sumAmountByCreatedAtBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

@@ -75,4 +75,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
      */
     @Query("SELECT c FROM Card c WHERE c.isDeleted = false")
     List<Card> findAllActive();
+
+    long countByStatus(CardStatus status);
 }

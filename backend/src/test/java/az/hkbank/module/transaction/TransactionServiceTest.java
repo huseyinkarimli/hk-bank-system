@@ -5,6 +5,7 @@ import az.hkbank.common.exception.ErrorCode;
 import az.hkbank.module.account.entity.Account;
 import az.hkbank.module.account.entity.AccountStatus;
 import az.hkbank.module.account.entity.CurrencyType;
+import az.hkbank.module.account.mapper.AccountMapper;
 import az.hkbank.module.account.repository.AccountRepository;
 import az.hkbank.module.audit.service.AuditService;
 import az.hkbank.module.card.entity.Card;
@@ -74,6 +75,9 @@ class TransactionServiceTest {
 
     @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private AccountMapper accountMapper;
 
     @InjectMocks
     private TransactionServiceImpl transactionService;

@@ -1,5 +1,6 @@
 package az.hkbank.config.jwt;
 
+import az.hkbank.module.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -11,6 +12,8 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -21,7 +24,11 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JwtService {
 
+    private static final String CLAIM_USER_ID = "userId";
+
     private final JwtProperties jwtProperties;
+
+    private final Set<Long> bannedUserIds = ConcurrentHashMap.newKeySet();
 
     /**
      * Generates a JWT token for the given user.
@@ -31,7 +38,37 @@ public class JwtService {
      */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        if (userDetails instanceof User user) {
+            claims.put(CLAIM_USER_ID, user.getId());
+        }
         return createToken(claims, userDetails.getUsername());
+    }
+
+    /**
+     * Extracts user id from token claims, if present (tokens issued before this claim may return null).
+     */
+    public Long extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        Object uid = claims.get(CLAIM_USER_ID);
+        if (uid == null) {
+            return null;
+        }
+        if (uid instanceof Number n) {
+            return n.longValue();
+        }
+        return null;
+    }
+
+    /**
+     * Marks a user as banned for JWT validation; existing tokens are rejected until server restart
+     * (in-memory set) or explicit unban.
+     */
+    public void banUser(Long userId) {
+        bannedUserIds.add(userId);
+    }
+
+    public boolean isUserBanned(Long userId) {
+        return bannedUserIds.contains(userId);
     }
 
     /**
