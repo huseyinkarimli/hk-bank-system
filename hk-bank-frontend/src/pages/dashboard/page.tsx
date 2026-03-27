@@ -3,7 +3,6 @@ import { StatsCard } from '@/components/dashboard/stats-card';
 import { Accounts } from '@/components/dashboard/accounts';
 import { SpendingChart } from '@/components/dashboard/spending-chart';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
-import { ProtectedRoute } from '@/components/protected-route';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/context/auth-context';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
@@ -15,13 +14,13 @@ function DashboardContent() {
     useDashboardData();
 
   const displayName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'there';
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'dəyərli müştəri';
 
   return (
     <DashboardLayout isAdmin={isAdmin}>
       {error ? (
         <Alert variant="destructive" className="mb-6 border-red-500/40 bg-red-950/30">
-          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertTitle>Xəta baş verdi</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
@@ -33,9 +32,9 @@ function DashboardContent() {
         className="mb-8"
       >
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-          Welcome back, {displayName}
+          Xoş gəldiniz, {displayName}
         </h1>
-        <p className="text-slate-400">Here&apos;s what&apos;s happening with your account today.</p>
+        <p className="text-slate-400">Bu gün hesabınızla bağlı əsas məlumatlar.</p>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -63,9 +62,5 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
-  return (
-    <ProtectedRoute>
-      <DashboardContent />
-    </ProtectedRoute>
-  );
+  return <DashboardContent />;
 }

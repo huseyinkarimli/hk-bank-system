@@ -1,4 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { setAuthToken } from '@/lib/axios';
+
+function parseJwtExpiryMs(token: string): number | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    let payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = payload.length % 4;
+    if (pad) payload += '='.repeat(4 - pad);
+    const json = JSON.parse(atob(payload)) as { exp?: number };
+    return typeof json.exp === 'number' ? json.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
 
 export interface User {
   id: string;
@@ -87,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const logoutRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const storedToken = localStorage.getItem('auth_token');
@@ -95,10 +111,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
+      setAuthToken(storedToken);
     }
 
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    setAuthToken(token);
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    const expMs = parseJwtExpiryMs(token);
+    if (expMs == null) return;
+    const ms = expMs - Date.now();
+    if (ms <= 0) {
+      logoutRef.current();
+      window.location.href = '/auth/login';
+      return;
+    }
+    const id = window.setTimeout(() => {
+      logoutRef.current();
+      window.location.href = '/auth/login';
+    }, ms);
+    return () => clearTimeout(id);
+  }, [token]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -119,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(nextUser);
       localStorage.setItem('auth_token', nextToken);
       localStorage.setItem('auth_user', JSON.stringify(nextUser));
+      setAuthToken(nextToken);
     } catch (error) {
       throw error;
     } finally {
@@ -151,6 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(nextUser);
       localStorage.setItem('auth_token', nextToken);
       localStorage.setItem('auth_user', JSON.stringify(nextUser));
+      setAuthToken(nextToken);
     } catch (error) {
       throw error;
     } finally {
@@ -158,12 +198,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
-  };
+    setAuthToken(null);
+  }, []);
+
+  logoutRef.current = logout;
 
   const refreshProfile = useCallback(async () => {
     const activeToken = token ?? localStorage.getItem('auth_token');

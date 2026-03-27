@@ -3,6 +3,10 @@ import { createContext, useContext, useEffect, useState } from 'react';
 interface PrivacyContextType {
   isPrivacyMode: boolean;
   togglePrivacyMode: () => void;
+  /** Alias for balance hiding / blur (same as `isPrivacyMode`). */
+  isPrivate: boolean;
+  /** Alias for `togglePrivacyMode` (balance privacy toggle). */
+  togglePrivate: () => void;
   blurAmount: number;
   setBlurAmount: (amount: number) => void;
 }
@@ -41,6 +45,8 @@ export function PrivacyProvider({ children }: { children: React.ReactNode }) {
       value={{
         isPrivacyMode,
         togglePrivacyMode,
+        isPrivate: isPrivacyMode,
+        togglePrivate: togglePrivacyMode,
         blurAmount,
         setBlurAmount,
       }}

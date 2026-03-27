@@ -123,3 +123,5 @@ export function FloatingAIChat() {
     </div>
   );
 }
+
+export { FloatingAIChat as FloatingChatWidget };

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { motion } from 'framer-motion'
 
 import { cn } from '@/lib/utils'
 
@@ -36,6 +37,10 @@ const buttonVariants = cva(
   },
 )
 
+const MOTION_VARIANTS = new Set(['default', 'destructive', 'secondary'])
+
+const tapSpring = { type: 'spring' as const, stiffness: 420, damping: 28 }
+
 function Button({
   className,
   variant,
@@ -46,6 +51,21 @@ function Button({
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {
+  const v = variant ?? 'default'
+
+  if (!asChild && MOTION_VARIANTS.has(v)) {
+    return (
+      <motion.button
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        transition={tapSpring}
+        {...props}
+      />
+    )
+  }
+
   const Comp = asChild ? Slot : 'button'
 
   return (

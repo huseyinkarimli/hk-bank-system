@@ -19,7 +19,7 @@ export function Header() {
             className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 text-left hover:bg-slate-800/70 transition-colors"
           >
             <Search className="h-4 w-4 text-slate-500 shrink-0" />
-            <span className="flex-1 text-sm text-slate-500">Search transactions…</span>
+            <span className="flex-1 text-sm text-slate-500">Əməliyyat axtar…</span>
             <kbd className="text-xs font-semibold text-slate-500 bg-slate-700/50 px-2 py-1 rounded">
               Ctrl K
             </kbd>

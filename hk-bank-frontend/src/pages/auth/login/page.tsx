@@ -8,9 +8,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const statCards = [
-  { label: 'Trusted by', value: '50K+', description: 'Active Users' },
-  { label: 'Banking', value: '100%', description: 'Secure' },
-  { label: 'Support', value: '24/7', description: 'Available' },
+  { label: 'İstifadəçi', value: '50K+', description: 'Aktiv müştəri' },
+  { label: 'Təhlükəsizlik', value: '100%', description: 'Qorunan əməliyyat' },
+  { label: 'Dəstək', value: '24/7', description: 'Hər zaman əlçatan' },
 ];
 
 export default function LoginPage() {
@@ -42,10 +42,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      addToast('Login successful!', 'success');
+      addToast('Uğurla daxil oldunuz', 'success');
       navigate('/dashboard');
     } catch {
-      addToast('Invalid email or password', 'error');
+      addToast('E-poçt və ya parol yanlışdır', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -64,13 +64,13 @@ export default function LoginPage() {
         <div className="space-y-8 max-w-md">
           <div>
             <h1 className="text-5xl font-bold text-white mb-2 text-balance">
-              Banking{' '}
+              Müasir{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
-                Reimagined
+                bankçılıq
               </span>
             </h1>
             <p className="text-slate-300 text-lg">
-              Experience modern banking with HK Bank. Fast, secure, and designed for you.
+              HK Bank ilə sürətli və təhlükəsiz maliyyə əməliyyatları — sizin üçün dizayn edilib.
             </p>
           </div>
 
@@ -100,19 +100,19 @@ export default function LoginPage() {
       >
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-slate-400">Sign in to your HK Bank account</p>
+            <h2 className="text-3xl font-bold text-white mb-2">Yenidən xoş gəldiniz</h2>
+            <p className="text-slate-400">HK Bank hesabınıza daxil olun</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-200">
-                Email Address
+                E-poçt
               </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="siz@hkbank.az"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -122,7 +122,7 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-slate-200">
-                Password
+                Parol
               </Label>
               <Input
                 id="password"
@@ -147,12 +147,12 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-slate-400 mt-6">
-            Don&apos;t have an account?{' '}
+            Hesabınız yoxdur?{' '}
             <Link
               to="/auth/register"
               className="text-blue-400 hover:text-blue-300 transition-colors font-semibold"
             >
-              Sign up
+              Qeydiyyat
             </Link>
           </p>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useCountUp } from '@/hooks/use-count-up';
 import { toast } from 'sonner';
 import { usePrivacy } from '@/context/privacy-context';
 import { Button } from '@/components/ui/button';
@@ -73,6 +74,11 @@ export function CardDetailsPanel({
   const [newPin, setNewPin] = useState('');
   const [pinBusy, setPinBusy] = useState(false);
   const { isPrivacyMode, blurAmount } = usePrivacy();
+  const balanceAnimated = useCountUp(balance, {
+    duration: 1200,
+    decimals: 2,
+    animate: !isPrivacyMode,
+  });
 
   const st = status.toUpperCase();
   const canBlock = st === 'ACTIVE';
@@ -90,18 +96,18 @@ export function CardDetailsPanel({
 
   const handlePinSubmit = async () => {
     if (currentPin.length !== 4 || newPin.length !== 4) {
-      toast.error('PIN must be exactly 4 digits');
+      toast.error('PIN dəqiq 4 rəqəm olmalıdır');
       return;
     }
     setPinBusy(true);
     try {
       await onChangePin(cardId, currentPin, newPin);
-      toast.success('PIN updated');
+      toast.success('PIN yeniləndi');
       setPinOpen(false);
       setCurrentPin('');
       setNewPin('');
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Could not change PIN');
+      toast.error(e instanceof Error ? e.message : 'PIN dəyişdirilə bilmədi');
     } finally {
       setPinBusy(false);
     }
@@ -118,7 +124,7 @@ export function CardDetailsPanel({
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-sm text-slate-400">Cardholder</p>
+              <p className="text-sm text-slate-400">Kart sahibi</p>
               <p className="text-lg font-semibold text-white">{cardholderName}</p>
             </div>
             <Badge variant="outline" className={cn('shrink-0', statusBadgeClass(status))}>
@@ -128,13 +134,13 @@ export function CardDetailsPanel({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-slate-400 mb-1">Card Number</p>
+              <p className="text-xs text-slate-400 mb-1">Kart nömrəsi</p>
               <p className="text-sm font-mono font-semibold text-slate-100">
                 {maskCardNumber(cardNumber)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Card Type</p>
+              <p className="text-xs text-slate-400 mb-1">Kart növü</p>
               <p className="text-sm font-semibold text-slate-100 capitalize">{cardType}</p>
             </div>
             <div>
@@ -142,23 +148,27 @@ export function CardDetailsPanel({
               <p className="text-xs font-mono text-slate-200 break-all">{maskIBAN(iban)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Available Balance</p>
+              <p className="text-xs text-slate-400 mb-1">Mövcud balans</p>
               <p
-                className="text-sm font-semibold text-slate-100"
+                className="text-sm font-semibold text-slate-100 tabular-nums"
                 style={
                   isPrivacyMode
                     ? { filter: `blur(${blurAmount}px)`, userSelect: 'none' }
                     : undefined
                 }
               >
-                {balance.toFixed(2)} AZN
+                {balanceAnimated.toLocaleString('az-AZ', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{' '}
+                AZN
               </p>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-white">Card Actions</p>
+          <p className="text-sm font-semibold text-white">Kart əməliyyatları</p>
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
@@ -166,7 +176,7 @@ export function CardDetailsPanel({
               className="w-full border-slate-600 text-slate-200 hover:bg-slate-800"
               onClick={() => setPinOpen(true)}
             >
-              Change PIN
+              PIN dəyiş
             </Button>
             {canBlock ? (
               <Button
@@ -175,7 +185,7 @@ export function CardDetailsPanel({
                 onClick={() => setShowBlockDialog(true)}
                 className="w-full text-red-400 border-red-500/40 hover:bg-red-950/40"
               >
-                Block Card
+                Kartı blokla
               </Button>
             ) : null}
             {canActivate ? (
@@ -185,14 +195,14 @@ export function CardDetailsPanel({
                 onClick={async () => {
                   try {
                     await onActivateCard(cardId);
-                    toast.success('Card activated');
+                    toast.success('Kart aktivləşdirildi');
                   } catch (e) {
-                    toast.error(e instanceof Error ? e.message : 'Activation failed');
+                    toast.error(e instanceof Error ? e.message : 'Aktivləşdirmə alınmadı');
                   }
                 }}
                 className="w-full text-emerald-400 border-emerald-500/40 hover:bg-emerald-950/30"
               >
-                Activate Card
+                Kartı aktivləşdir
               </Button>
             ) : null}
             <Button
@@ -201,7 +211,7 @@ export function CardDetailsPanel({
               onClick={() => setShowDeleteDialog(true)}
               className="w-full col-span-2 text-red-400 border-red-500/40 hover:bg-red-950/40"
             >
-              Delete Card
+              Kartı sil
             </Button>
           </div>
         </div>
@@ -210,14 +220,14 @@ export function CardDetailsPanel({
       <Dialog open={pinOpen} onOpenChange={setPinOpen}>
         <DialogContent className="border-slate-700 bg-slate-900 text-slate-100 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Change PIN</DialogTitle>
+            <DialogTitle>PIN dəyişdirilməsi</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Enter your current PIN and a new 4-digit PIN.
+              Cari PIN və yeni 4 rəqəmli PIN daxil edin.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="current-pin">Current PIN</Label>
+              <Label htmlFor="current-pin">Cari PIN</Label>
               <Input
                 id="current-pin"
                 type="password"
@@ -229,7 +239,7 @@ export function CardDetailsPanel({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-pin">New PIN</Label>
+              <Label htmlFor="new-pin">Yeni PIN</Label>
               <Input
                 id="new-pin"
                 type="password"
@@ -243,10 +253,10 @@ export function CardDetailsPanel({
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setPinOpen(false)} className="border-slate-600">
-              Cancel
+              İmtina
             </Button>
             <Button onClick={() => void handlePinSubmit()} disabled={pinBusy}>
-              {pinBusy ? 'Saving…' : 'Save PIN'}
+              {pinBusy ? 'Yadda saxlanır…' : 'PIN saxla'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -255,9 +265,9 @@ export function CardDetailsPanel({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="border-slate-700 bg-slate-900 text-slate-100">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Card</AlertDialogTitle>
+            <AlertDialogTitle>Kartı silmək</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              Are you sure you want to delete this card? This action cannot be undone.
+              Bu kartı silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="text-sm bg-slate-800 p-3 rounded-lg mb-4 border border-slate-700">
@@ -265,21 +275,21 @@ export function CardDetailsPanel({
           </div>
           <div className="flex gap-2">
             <AlertDialogCancel className="border-slate-600 bg-slate-800 text-slate-200">
-              Cancel
+              İmtina
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 try {
                   await onDeleteCard(cardId);
-                  toast.success('Card removed');
+                  toast.success('Kart silindi');
                   setShowDeleteDialog(false);
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : 'Delete failed');
+                  toast.error(e instanceof Error ? e.message : 'Silinmə alınmadı');
                 }
               }}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              Sil
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
@@ -288,9 +298,9 @@ export function CardDetailsPanel({
       <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
         <AlertDialogContent className="border-slate-700 bg-slate-900 text-slate-100">
           <AlertDialogHeader>
-            <AlertDialogTitle>Block Card</AlertDialogTitle>
+            <AlertDialogTitle>Kartı bloklamaq</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              Are you sure you want to block this card? You can activate it again later.
+              Kartı bloklamaq istədiyinizə əminsiniz? Sonradan yenidən aktivləşdirə bilərsiniz.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="text-sm bg-slate-800 p-3 rounded-lg mb-4 border border-slate-700">
@@ -298,21 +308,21 @@ export function CardDetailsPanel({
           </div>
           <div className="flex gap-2">
             <AlertDialogCancel className="border-slate-600 bg-slate-800 text-slate-200">
-              Cancel
+              İmtina
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 try {
                   await onBlockCard(cardId);
-                  toast.success('Card blocked');
+                  toast.success('Kart bloklandı');
                   setShowBlockDialog(false);
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : 'Block failed');
+                  toast.error(e instanceof Error ? e.message : 'Bloklama alınmadı');
                 }
               }}
               className="bg-red-600 hover:bg-red-700"
             >
-              Block Card
+              Blokla
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

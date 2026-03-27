@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { usePrivacy } from '@/context/privacy-context';
+import { useCountUp } from '@/hooks/use-count-up';
 
 export interface BankCard3DProps {
   cardType: 'debit' | 'credit' | 'virtual';
@@ -29,11 +30,28 @@ export function BankCard3D({
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [finePointer, setFinePointer] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
   const { isPrivacyMode, blurAmount } = usePrivacy();
 
+  const balanceAnimated = useCountUp(balance ?? 0, {
+    duration: 1200,
+    decimals: 2,
+    animate: !isPrivacyMode && balance !== undefined,
+  });
+
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: fine)');
+    const update = () => setFinePointer(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const maxTilt = finePointer ? 8 : 2;
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || !finePointer) return;
 
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -42,8 +60,8 @@ export function BankCard3D({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotateXValue = ((y - centerY) / centerY) * 10;
-    const rotateYValue = ((centerX - x) / centerX) * 10;
+    const rotateXValue = ((y - centerY) / centerY) * maxTilt;
+    const rotateYValue = ((centerX - x) / centerX) * maxTilt;
 
     setRotateX(rotateXValue);
     setRotateY(rotateYValue);
@@ -62,14 +80,16 @@ export function BankCard3D({
   };
 
   const balanceText =
-    balance !== undefined ? `${balance.toFixed(2)}` : '—';
+    balance !== undefined
+      ? balanceAnimated.toLocaleString('az-AZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : '—';
 
   return (
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative"
+      className={cn('relative', !finePointer && 'touch-manipulation')}
       style={{ perspective: '1000px' }}
     >
       <motion.div
@@ -108,16 +128,16 @@ export function BankCard3D({
 
           <div className="relative z-10 space-y-2">
             <div className="text-white/70 text-xs font-semibold tracking-widest">
-              {cardType === 'debit' && 'DEBIT CARD'}
-              {cardType === 'credit' && 'CREDIT CARD'}
-              {cardType === 'virtual' && 'VIRTUAL CARD'}
+              {cardType === 'debit' && 'DEBET KART'}
+              {cardType === 'credit' && 'KREDİT KART'}
+              {cardType === 'virtual' && 'VİRTUAL KART'}
             </div>
             <div className="w-12 h-8 bg-yellow-400 rounded opacity-80" />
           </div>
 
           <div className="relative z-10 space-y-4">
             <div className="space-y-1">
-              <div className="text-white/50 text-xs">Card Number</div>
+              <div className="text-white/50 text-xs">Kart nömrəsi</div>
               <div className="text-white text-xl font-mono font-semibold tracking-wider">
                 {maskCardNumber(cardNumber)}
               </div>
@@ -125,11 +145,11 @@ export function BankCard3D({
 
             <div className="flex justify-between items-end">
               <div className="space-y-1">
-                <div className="text-white/50 text-xs">Card Holder</div>
+                <div className="text-white/50 text-xs">Kart sahibi</div>
                 <div className="text-white font-semibold">{cardholderName}</div>
               </div>
               <div className="space-y-1">
-                <div className="text-white/50 text-xs">Expires</div>
+                <div className="text-white/50 text-xs">Bitmə</div>
                 <div
                   className={cn(
                     'text-white font-mono',
@@ -181,16 +201,16 @@ export function BankCard3D({
 
           {isExpanded && balance !== undefined && (
             <div className="relative z-10">
-              <div className="text-white/50 text-xs">Available Balance</div>
+              <div className="text-white/50 text-xs">Mövcud balans</div>
               <div
-                className="text-white text-2xl font-bold"
+                className="text-white text-2xl font-bold tabular-nums"
                 style={
                   isPrivacyMode
                     ? { filter: `blur(${blurAmount}px)`, userSelect: 'none' }
                     : undefined
                 }
               >
-                ${balanceText}
+                {balanceText} AZN
               </div>
             </div>
           )}

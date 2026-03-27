@@ -1,4 +1,5 @@
 import { PrivacyAmount } from '@/components/shared/PrivacyAmount';
+import { EmptyState } from '@/components/empty-state';
 
 export interface TransferRow {
   id: string;
@@ -18,13 +19,18 @@ export function TransferRecentList({ rows }: TransferRecentListProps) {
     <div className="mb-6">
       <h3 className="text-xl font-bold text-white mb-4">Son əməliyyatlar</h3>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">Hələ əməliyyat yoxdur</p>
+        <EmptyState
+          className="border-slate-700/40 bg-slate-900/30 py-10"
+          icon="💸"
+          title="Əməliyyat yoxdur"
+          description="Köçürmələr tamamlandıqca burada görünəcək."
+        />
       ) : (
         <div className="space-y-3">
           {rows.map((row) => (
             <div
               key={row.id}
-              className="glass-sm p-4 flex items-center justify-between border border-slate-700/40"
+              className="glass-sm p-4 flex items-center justify-between border border-slate-700/40 touch-manipulation min-h-[56px]"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
@@ -36,7 +42,7 @@ export function TransferRecentList({ rows }: TransferRecentListProps) {
                 </div>
               </div>
               <div
-                className={`font-semibold shrink-0 ml-2 flex items-baseline gap-0.5 ${
+                className={`font-semibold shrink-0 ml-2 flex items-baseline gap-0.5 tabular-nums ${
                   row.isInbound ? 'text-emerald-400' : 'text-slate-200'
                 }`}
               >

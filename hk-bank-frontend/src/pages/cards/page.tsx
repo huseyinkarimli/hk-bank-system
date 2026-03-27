@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/dashboard/layout';
-import { ProtectedRoute } from '@/components/protected-route';
 import { BankCard3D } from '@/components/cards/BankCard3D';
 import { CardDetailsPanel } from '@/components/cards/CardDetailsPanel';
 import { CreateCardModal } from '@/components/cards/CreateCardModal';
@@ -10,6 +9,7 @@ import { CardCustomizer } from '@/components/cards/CardCustomizer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { EmptyState } from '@/components/empty-state';
 import { useAuth } from '@/context/auth-context';
 import { useCards } from '@/hooks/use-cards';
 
@@ -43,15 +43,15 @@ function CardsContent() {
   );
 
   const cardholderPreview =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'Your Name';
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'Kart sahibi';
 
   const handleCreate = useCallback(
     async (data: { cardType: 'debit' | 'credit' | 'virtual'; accountId: string }) => {
       try {
         await createCard(data.accountId, data.cardType);
-        toast.success('Card created');
+        toast.success('Kart yaradıldı');
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Could not create card');
+        toast.error(e instanceof Error ? e.message : 'Kart yaradıla bilmədi');
         throw e;
       }
     },
@@ -72,7 +72,7 @@ function CardsContent() {
     <DashboardLayout isAdmin={isAdmin}>
       {error ? (
         <Alert variant="destructive" className="mb-6 border-red-500/40 bg-red-950/30">
-          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertTitle>Xəta baş verdi</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
@@ -83,9 +83,9 @@ function CardsContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">My Cards</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Kartlarım</h1>
           <p className="text-slate-400 text-sm md:text-base">
-            Manage and customize your payment cards
+            Ödəniş kartlarınızı idarə edin və fərdiləşdirin
           </p>
         </motion.div>
         <Button
@@ -93,20 +93,32 @@ function CardsContent() {
           className="shrink-0 bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25"
           disabled={accounts.length === 0 || isLoading}
         >
-          + New Card
+          + Yeni kart
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Your Cards</h2>
+          <h2 className="text-lg font-semibold text-white">Kartlarınız</h2>
 
           {isLoading ? (
-            <p className="text-slate-400 text-sm">Loading cards…</p>
+            <p className="text-slate-400 text-sm">Kartlar yüklənir…</p>
           ) : cards.length === 0 ? (
-            <p className="text-slate-400 text-sm">
-              No cards yet. Open an account if needed, then create a card.
-            </p>
+            <EmptyState
+              className="border-slate-700/50 bg-slate-900/40"
+              icon="💳"
+              title="Hələ kart yoxdur"
+              description={
+                accounts.length === 0
+                  ? 'Kart yaratmaq üçün əvvəlcə «Hesablar» bölməsindən hesab açın.'
+                  : 'Yeni kart yaratmaq üçün düyməyə toxunun.'
+              }
+              action={
+                accounts.length > 0
+                  ? { label: 'Yeni kart', onClick: () => setShowCreateModal(true) }
+                  : undefined
+              }
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AnimatePresence>
@@ -139,10 +151,14 @@ function CardsContent() {
                       />
                       <div className="text-sm">
                         <p className="font-semibold text-slate-100 capitalize">
-                          {card.cardType} Card
+                          {card.cardType === 'debit'
+                            ? 'Debet kart'
+                            : card.cardType === 'credit'
+                              ? 'Kredit kart'
+                              : 'Virtual kart'}
                         </p>
                         <p className="text-xs text-slate-500">
-                          Last 4: •••• {lastFourFromPan(card.displayCardNumber)}
+                          Son 4: •••• {lastFourFromPan(card.displayCardNumber)}
                         </p>
                       </div>
                     </div>
@@ -160,7 +176,7 @@ function CardsContent() {
         <div className="lg:col-span-1">
           <Card className="sticky top-24 border-slate-700 bg-slate-900/60 text-slate-100">
             <div className="p-6">
-              <h2 className="text-lg font-semibold mb-4 text-white">Card Details</h2>
+              <h2 className="text-lg font-semibold mb-4 text-white">Kart təfərrüatları</h2>
               {selectedCard ? (
                 <CardDetailsPanel
                   cardId={selectedCard.id}
@@ -176,7 +192,7 @@ function CardsContent() {
                   onChangePin={(id, currentPin, newPin) => changePin(id, currentPin, newPin)}
                 />
               ) : (
-                <p className="text-sm text-slate-400">No card selected</p>
+                <p className="text-sm text-slate-400">Kart seçilməyib</p>
               )}
             </div>
           </Card>
@@ -195,9 +211,5 @@ function CardsContent() {
 }
 
 export default function CardsPage() {
-  return (
-    <ProtectedRoute>
-      <CardsContent />
-    </ProtectedRoute>
-  );
+  return <CardsContent />;
 }

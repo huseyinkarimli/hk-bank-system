@@ -1,5 +1,4 @@
 import { DashboardLayout } from '@/components/dashboard/layout';
-import { ProtectedRoute } from '@/components/protected-route';
 import { TransferFlow } from '@/components/transfers/TransferFlow';
 import { useAuth } from '@/context/auth-context';
 
@@ -17,9 +16,5 @@ function TransfersContent() {
 }
 
 export default function TransfersPage() {
-  return (
-    <ProtectedRoute>
-      <TransfersContent />
-    </ProtectedRoute>
-  );
+  return <TransfersContent />;
 }

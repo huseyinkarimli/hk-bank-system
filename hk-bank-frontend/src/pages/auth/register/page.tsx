@@ -41,21 +41,21 @@ export default function RegisterPage() {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.firstName.trim()) newErrors.firstName = 'Ad mütləqdir';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Soyad mütləqdir';
+    if (!formData.email.trim()) newErrors.email = 'E-poçt mütləqdir';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = 'Invalid email format';
+      newErrors.email = 'E-poçt formatı yanlışdır';
 
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+    if (!formData.password) newErrors.password = 'Parol mütləqdir';
+    else if (formData.password.length < 8) newErrors.password = 'Parol ən azı 8 simvol olmalıdır';
 
-    if (confirmPassword !== formData.password) newErrors.confirmPassword = 'Passwords do not match';
+    if (confirmPassword !== formData.password) newErrors.confirmPassword = 'Parollar uyğun gəlmir';
 
     const phoneDigits = formData.phoneNumber?.replace(/\s/g, '') ?? '';
-    if (!phoneDigits) newErrors.phoneNumber = 'Phone number is required';
+    if (!phoneDigits) newErrors.phoneNumber = 'Telefon nömrəsi mütləqdir';
     else if (!/^\d{9}$/.test(phoneDigits))
-      newErrors.phoneNumber = 'Enter 9 digits (e.g. 501234567)';
+      newErrors.phoneNumber = '9 rəqəm daxil edin (məs. 501234567)';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -65,7 +65,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!validate()) {
-      addToast('Please fix the errors in the form', 'error');
+      addToast('Formdakı xətaları düzəldin', 'error');
       return;
     }
 
@@ -73,10 +73,10 @@ export default function RegisterPage() {
 
     try {
       await register(formData);
-      addToast('Account created successfully!', 'success');
+      addToast('Hesab uğurla yaradıldı', 'success');
       navigate('/dashboard');
     } catch {
-      addToast('Registration failed. Please try again.', 'error');
+      addToast('Qeydiyyat alınmadı. Yenidən cəhd edin.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -102,8 +102,8 @@ export default function RegisterPage() {
       >
         <div className="w-full max-w-2xl">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Create Your Account</h2>
-            <p className="text-slate-400">Join HK Bank and experience modern banking</p>
+            <h2 className="text-3xl font-bold text-white mb-2">Hesab yaradın</h2>
+            <p className="text-slate-400">HK Bank ilə müasir bankçılığa qoşulun</p>
           </div>
 
           <form
@@ -113,12 +113,12 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-slate-200">
-                  First Name
+                  Ad
                 </Label>
                 <Input
                   id="firstName"
                   name="firstName"
-                  placeholder="John"
+                  placeholder="Elvin"
                   value={formData.firstName}
                   onChange={handleChange}
                   required
@@ -131,12 +131,12 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-slate-200">
-                  Last Name
+                  Soyad
                 </Label>
                 <Input
                   id="lastName"
                   name="lastName"
-                  placeholder="Doe"
+                  placeholder="Namazov"
                   value={formData.lastName}
                   onChange={handleChange}
                   required
@@ -150,13 +150,13 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-200">
-                Email Address
+                E-poçt
               </Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="siz@hkbank.az"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -170,7 +170,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-slate-200">
-                  Password
+                  Parol
                 </Label>
                 <Input
                   id="password"
@@ -189,7 +189,7 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-slate-200">
-                  Confirm Password
+                  Parolu təsdiqlə
                 </Label>
                 <Input
                   id="confirmPassword"
@@ -212,7 +212,7 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="phoneNumber" className="text-slate-200">
-                Phone Number
+                Telefon nömrəsi
               </Label>
               <div className="flex">
                 <span className="bg-white/5 border border-white/10 border-r-0 px-4 py-2 rounded-l-lg text-slate-400 flex items-center">
@@ -239,17 +239,17 @@ export default function RegisterPage() {
               disabled={isLoading}
               className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Hesab yaradılır…' : 'Hesab yarat'}
             </motion.button>
           </form>
 
           <p className="text-center text-slate-400 mt-6">
-            Already have an account?{' '}
+            Artıq hesabınız var?{' '}
             <Link
               to="/auth/login"
               className="text-blue-400 hover:text-blue-300 transition-colors font-semibold"
             >
-              Sign in
+              Daxil ol
             </Link>
           </p>
         </div>

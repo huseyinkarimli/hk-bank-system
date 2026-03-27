@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -16,6 +15,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { usePrivacy } from '@/context/privacy-context';
 import { cn } from '@/lib/utils';
+import { useCountUp } from '@/hooks/use-count-up';
 import type { DashboardStat } from '@/hooks/use-dashboard-data';
 
 interface StatsCardProps extends DashboardStat {
@@ -44,30 +44,15 @@ export function StatsCard({
   valueSuffix,
 }: StatsCardProps) {
   const { isPrivacyMode, blurAmount } = usePrivacy();
-  const [displayValue, setDisplayValue] = useState(0);
-  const Icon = iconMap[icon] || Wallet;
-
-  useEffect(() => {
-    const duration = 1000;
-    const steps = 60;
-    const stepValue = value / steps || 0;
-    let current = 0;
-
-    const interval = setInterval(() => {
-      current += stepValue;
-      if (current >= value) {
-        setDisplayValue(value);
-        clearInterval(interval);
-      } else {
-        setDisplayValue(Math.floor(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(interval);
-  }, [value]);
+  const displayValue = useCountUp(value, {
+    duration: 1200,
+    decimals: 0,
+    animate: !isPrivacyMode,
+  });
 
   const isPositive = change > 0;
   const suffix = valueSuffix ?? '';
+  const Icon = iconMap[icon] || Wallet;
 
   return (
     <motion.div
@@ -88,12 +73,12 @@ export function StatsCard({
 
           <div className="mb-4">
             <div
-              className={cn('text-3xl font-bold text-white transition-all duration-300')}
+              className={cn('text-3xl font-bold text-white transition-all duration-300 tabular-nums')}
               style={{
                 filter: isPrivacyMode ? `blur(${blurAmount}px)` : 'none',
               }}
             >
-              {displayValue.toLocaleString('en-HK')}
+              {displayValue.toLocaleString('az-AZ')}
               {suffix ? ` ${suffix}` : ''}
             </div>
           </div>
@@ -109,7 +94,7 @@ export function StatsCard({
                 {isPositive ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                 {Math.abs(change).toFixed(1)}%
               </div>
-              <span className="text-xs text-slate-500">from last month</span>
+              <span className="text-xs text-slate-500">əvvəlki aya görə</span>
             </div>
           ) : null}
         </div>

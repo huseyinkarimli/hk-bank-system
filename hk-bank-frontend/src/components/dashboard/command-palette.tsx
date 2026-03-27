@@ -16,6 +16,9 @@ import {
   Send,
   Settings,
   Zap,
+  Wallet,
+  Bell,
+  UserRound,
 } from 'lucide-react';
 
 export function CommandPalette() {
@@ -42,74 +45,98 @@ export function CommandPalette() {
 
   const commands = [
     {
-      group: 'Navigation',
+      group: 'Naviqasiya',
       items: [
         {
           icon: LayoutDashboard,
-          label: 'Dashboard',
-          description: 'Go to your dashboard',
+          label: 'İdarə paneli',
+          description: 'Əsas ekrana keç',
           action: () => navigate('/dashboard'),
+        },
+        {
+          icon: Wallet,
+          label: 'Hesablar',
+          description: 'Hesablarımı aç',
+          action: () => navigate('/accounts'),
+        },
+        {
+          icon: Bell,
+          label: 'Bildirişlər',
+          description: 'Bildirişlər siyahısı',
+          action: () => navigate('/notifications'),
+        },
+        {
+          icon: UserRound,
+          label: 'Profil',
+          description: 'Profil və parametrlər',
+          action: () => navigate('/profile'),
         },
       ],
     },
     {
-      group: 'Actions',
+      group: 'Əməliyyatlar',
       items: [
         {
           icon: Send,
-          label: 'Transfer Money',
-          description: 'Send money to another account',
-          action: () => navigate('/dashboard'),
+          label: 'Köçürmə',
+          description: 'Başqa hesaba köçürmə',
+          action: () => navigate('/transfer'),
         },
         {
           icon: Plus,
-          label: 'New Card',
-          description: 'Request a new debit or credit card',
-          action: () => navigate('/dashboard'),
+          label: 'Yeni kart',
+          description: 'Debet və ya kredit kartı',
+          action: () => navigate('/cards'),
         },
         {
           icon: Plus,
-          label: 'New Account',
-          description: 'Create a new savings account',
-          action: () => navigate('/dashboard'),
+          label: 'Yeni hesab',
+          description: 'Yeni hesab aç',
+          action: () => navigate('/accounts'),
         },
       ],
     },
     {
-      group: 'Tools',
+      group: 'Alətlər',
       items: [
         {
           icon: Zap,
-          label: 'Quick Pay',
-          description: 'Pay from your favorite payees',
-          action: () => navigate('/dashboard'),
+          label: 'Sürətli ödəniş',
+          description: 'Ödənişlər səhifəsi',
+          action: () => navigate('/payments'),
         },
         {
           icon: CreditCard,
-          label: 'Request Money',
-          description: 'Request money from friends',
-          action: () => navigate('/dashboard'),
+          label: 'Kartlarım',
+          description: 'Kart idarəetməsi',
+          action: () => navigate('/cards'),
         },
       ],
     },
     {
-      group: 'Settings',
+      group: 'Parametrlər',
       items: [
         {
           icon: Settings,
-          label: 'Preferences',
-          description: 'Manage your account settings',
-          action: () => navigate('/dashboard'),
+          label: 'Tənzimləmələr',
+          description: 'Profil və görünüş',
+          action: () => navigate('/profile'),
         },
       ],
     },
   ];
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search actions or settings..." />
-      <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Əmrlər paneli"
+      description="Əməliyyat axtarın və seçin"
+      className="pb-[max(12px,env(safe-area-inset-bottom))]"
+    >
+      <CommandInput placeholder="Axtarış…" className="min-h-12 text-base" />
+      <CommandList className="max-h-[min(70vh,28rem)]">
+        <CommandEmpty>Nəticə tapılmadı.</CommandEmpty>
         {commands.map((group) => (
           <CommandGroup key={group.group} heading={group.group}>
             {group.items.map((item) => (
@@ -120,13 +147,14 @@ export function CommandPalette() {
                   item.action();
                   setOpen(false);
                 }}
+                className="min-h-12 py-3 cursor-pointer touch-manipulation"
               >
-                <item.icon className="mr-2 h-4 w-4 text-cyan-400" />
-                <div className="flex-1">
+                <item.icon className="mr-2 h-5 w-5 text-cyan-400 shrink-0" />
+                <div className="flex-1 min-w-0 text-left">
                   <p className="font-medium">{item.label}</p>
                   <p className="text-xs text-slate-500">{item.description}</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-slate-500" />
+                <ArrowRight className="h-4 w-4 text-slate-500 shrink-0" />
               </CommandItem>
             ))}
           </CommandGroup>

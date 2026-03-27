@@ -1,5 +1,4 @@
 import { DashboardLayout } from '@/components/dashboard/layout';
-import { ProtectedRoute } from '@/components/protected-route';
 import { PaymentFlow } from '@/components/payments/PaymentFlow';
 import { useAuth } from '@/context/auth-context';
 
@@ -17,9 +16,5 @@ function PaymentsContent() {
 }
 
 export default function PaymentsPage() {
-  return (
-    <ProtectedRoute>
-      <PaymentsContent />
-    </ProtectedRoute>
-  );
+  return <PaymentsContent />;
 }

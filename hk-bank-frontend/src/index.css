@@ -67,6 +67,15 @@
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
+  }
+
+  html {
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
   }
 }
 
@@ -81,6 +90,30 @@
 
   .glass-lg {
     @apply bg-card/30 backdrop-blur-2xl border border-border/20 rounded-2xl;
+  }
+}
+
+/* Axios in-flight: top gradient bar (nprogress-style) */
+html[data-axios-loading='true']::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 10000;
+  pointer-events: none;
+  background: linear-gradient(90deg, #06b6d4, #8b5cf6, #22d3ee, #a78bfa);
+  background-size: 220% 100%;
+  animation: hk-axios-bar 0.85s linear infinite;
+}
+
+@keyframes hk-axios-bar {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
   }
 }
 
