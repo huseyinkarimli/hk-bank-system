@@ -12,6 +12,8 @@ import { CreateAccountModal } from '@/components/accounts/CreateAccountModal';
 import { StatementModal } from '@/components/accounts/StatementModal';
 import { api } from '@/lib/axios';
 import { useAuth } from '@/context/auth-context';
+import { isUserAdmin } from '@/lib/user-role';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ApiAccountSummary {
   id: number;
@@ -33,7 +35,7 @@ function mapAccount(a: ApiAccountSummary): AccountCardModel {
 
 function AccountsContent() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
   const [accounts, setAccounts] = useState<AccountCardModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -88,6 +90,14 @@ function AccountsContent() {
             <p className="text-slate-400">
               {loading ? 'Yüklənir…' : `${accounts.length} hesab`}
             </p>
+            <Alert className="mt-4 border-cyan-500/30 bg-cyan-950/20 text-slate-100">
+              <AlertTitle className="text-cyan-200 text-sm">Hesab (IBAN) və kart</AlertTitle>
+              <AlertDescription className="text-slate-300 text-xs leading-relaxed">
+                Pul vəsaitiniz <strong className="text-white">hesabınızda (IBAN)</strong> saxlanılır.
+                Ödəniş kartı həmin hesaba bağlanır və alış-veriş zamanı hesab balansından istifadə olunur —
+                kartın ayrıca “öz balansı” yoxdur.
+              </AlertDescription>
+            </Alert>
           </div>
           <Button
             onClick={() => setIsCreateModalOpen(true)}

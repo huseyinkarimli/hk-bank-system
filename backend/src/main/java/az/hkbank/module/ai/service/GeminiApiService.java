@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -41,6 +42,11 @@ public class GeminiApiService {
      */
     public String sendMessage(List<ChatMessage> history, String userMessage) {
         log.info("Sending message to Gemini API");
+
+        if (!StringUtils.hasText(geminiProperties.getApiKey())
+                || "your_gemini_api_key_here".equalsIgnoreCase(geminiProperties.getApiKey().trim())) {
+            throw new BankException(ErrorCode.AI_SERVICE_UNAVAILABLE, "Gemini API key is not configured");
+        }
 
         try {
             String requestBody = buildRequestBody(history, userMessage);

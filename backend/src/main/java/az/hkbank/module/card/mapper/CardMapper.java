@@ -21,6 +21,8 @@ public interface CardMapper {
      * @return CardResponse DTO
      */
     @Mapping(target = "maskedCardNumber", expression = "java(CardNumberGenerator.maskCardNumber(card.getCardNumber()))")
+    @Mapping(target = "fullCardNumber", expression = "java(CardNumberGenerator.formatCardNumber(card.getCardNumber()))")
+    @Mapping(target = "cvv", expression = "java(CardNumberGenerator.revealableCvv(card.getCvv()))")
     @Mapping(target = "accountId", source = "account.id")
     CardResponse toCardResponse(Card card);
 

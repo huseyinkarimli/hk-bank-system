@@ -1,10 +1,11 @@
 import { DashboardLayout } from '@/components/dashboard/layout';
 import { PaymentFlow } from '@/components/payments/PaymentFlow';
 import { useAuth } from '@/context/auth-context';
+import { isUserAdmin } from '@/lib/user-role';
 
 function PaymentsContent() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
 
   return (
     <DashboardLayout isAdmin={isAdmin}>

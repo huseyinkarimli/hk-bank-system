@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { apiFetch } from '@/lib/api';
+import { isUserAdmin } from '@/lib/user-role';
 
 export interface DashboardStat {
   title: string;
@@ -98,10 +99,12 @@ function formatTxTime(iso: string): string {
   }
 }
 
-function startOfMonthIso(): string {
+/** Local calendar date (YYYY-MM-DD) so the backend parses it as start-of-month without TZ shift. */
+function startOfMonthDateParam(): string {
   const d = new Date();
-  const s = new Date(d.getFullYear(), d.getMonth(), 1);
-  return s.toISOString().slice(0, 19);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}-01`;
 }
 
 function buildWeeklyChart(rows: TransactionSummaryApi[]): ChartDataPoint[] {
@@ -135,7 +138,7 @@ export function useDashboardData() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
 
   const load = useCallback(async () => {
     if (!token) {
@@ -153,7 +156,7 @@ export function useDashboardData() {
         apiFetch<BalanceSummaryApi>('/api/accounts/balance-summary', token),
         apiFetch<SpringPage<TransactionSummaryApi>>('/api/transactions?size=50&sort=createdAt,desc', token),
         apiFetch<SpringPage<TransactionSummaryApi>>(
-          `/api/transactions?size=200&sort=createdAt,desc&startDate=${encodeURIComponent(startOfMonthIso())}`,
+          `/api/transactions?size=200&sort=createdAt,desc&startDate=${encodeURIComponent(startOfMonthDateParam())}`,
           token
         ),
       ]);

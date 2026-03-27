@@ -2,6 +2,8 @@ package az.hkbank.module.transaction.controller;
 
 import az.hkbank.common.response.ApiResponse;
 import az.hkbank.module.transaction.dto.*;
+import az.hkbank.module.transaction.entity.TransactionStatus;
+import az.hkbank.module.transaction.entity.TransactionType;
 import az.hkbank.module.transaction.service.TransactionService;
 import az.hkbank.module.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 /**
  * REST controller for transaction operations.
@@ -152,11 +159,65 @@ public class TransactionController {
     })
     public ResponseEntity<ApiResponse<Page<TransactionSummaryResponse>>> getUserTransactions(
             @AuthenticationPrincipal User currentUser,
-            @ModelAttribute TransactionFilterRequest filter,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) BigDecimal minAmount,
+            @RequestParam(required = false) BigDecimal maxAmount,
             Pageable pageable) {
+        TransactionFilterRequest filter = parseTransactionFilter(
+                startDate, endDate, type, status, minAmount, maxAmount);
         Page<TransactionSummaryResponse> transactions = transactionService.getUserTransactions(
                 currentUser.getId(), filter, pageable);
         return ResponseEntity.ok(ApiResponse.success(transactions));
+    }
+
+    private static TransactionFilterRequest parseTransactionFilter(
+            String startDate,
+            String endDate,
+            String type,
+            String status,
+            BigDecimal minAmount,
+            BigDecimal maxAmount) {
+        return TransactionFilterRequest.builder()
+                .startDate(parseDateTimeParam(startDate, true))
+                .endDate(parseDateTimeParam(endDate, false))
+                .type(parseEnum(type, TransactionType.class))
+                .status(parseEnum(status, TransactionStatus.class))
+                .minAmount(minAmount)
+                .maxAmount(maxAmount)
+                .build();
+    }
+
+    private static LocalDateTime parseDateTimeParam(String raw, boolean startOfDay) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String s = raw.trim();
+        try {
+            if (s.length() <= 10 && s.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                LocalDate d = LocalDate.parse(s);
+                return startOfDay ? d.atStartOfDay() : d.plusDays(1).atStartOfDay().minusNanos(1);
+            }
+            if (s.length() == 16 && s.charAt(10) == ' ') {
+                s = s.substring(0, 10) + "T" + s.substring(11);
+            }
+            return LocalDateTime.parse(s);
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
+    }
+
+    private static <E extends Enum<E>> E parseEnum(String raw, Class<E> type) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return Enum.valueOf(type, raw.trim().toUpperCase());
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     /**

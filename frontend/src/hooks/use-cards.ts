@@ -7,7 +7,11 @@ export type UICardType = 'debit' | 'credit' | 'virtual';
 export interface BankCardView {
   id: string;
   cardholderName: string;
+  /** Masked PAN for default display */
   displayCardNumber: string;
+  /** Raw 16 digits when API exposes full PAN (owner views) */
+  panDigits?: string;
+  cvv?: string | null;
   expiryLabel: string;
   cardType: UICardType;
   status: string;
@@ -30,6 +34,8 @@ interface CardSummaryApi {
 interface CardDetailApi {
   id: number;
   maskedCardNumber: string;
+  fullCardNumber?: string;
+  cvv?: string | null;
   cardHolder: string;
   cardType: string;
   status: string;
@@ -74,6 +80,12 @@ function formatExpiry(iso?: string): string {
   return `${m}/${y.slice(2)}`;
 }
 
+function digitsOnlyPan(formatted?: string): string | undefined {
+  if (!formatted) return undefined;
+  const d = formatted.replace(/\D/g, '');
+  return d.length === 16 ? d : undefined;
+}
+
 function toView(
   detail: CardDetailApi,
   accounts: Map<string, AccountSummaryApi>,
@@ -83,10 +95,13 @@ function toView(
   const acc = accounts.get(String(detail.accountId));
   const iban = acc?.iban ?? '—';
   const balance = num(acc?.balance);
+  const panDigits = digitsOnlyPan(detail.fullCardNumber);
   return {
     id: String(detail.id),
     cardholderName: detail.cardHolder ?? '—',
     displayCardNumber: detail.maskedCardNumber ?? '—',
+    panDigits,
+    cvv: detail.cvv ?? null,
     expiryLabel: formatExpiry(detail.expiryDate),
     cardType: mapCardType(detail.cardType),
     status: String(detail.status).toUpperCase(),
@@ -177,16 +192,20 @@ export function useCards() {
   }, [load]);
 
   const createCard = useCallback(
-    async (accountId: string, cardType: UICardType) => {
+    async (accountId: string, cardType: UICardType, initialPin?: string) => {
       if (!token) throw new Error('Not signed in');
       const typeUpper = cardType.toUpperCase();
+      const body: Record<string, unknown> = {
+        accountId: Number(accountId),
+        cardType: typeUpper,
+      };
+      if (initialPin && /^\d{4}$/.test(initialPin)) {
+        body.initialPin = initialPin;
+      }
       await apiFetch<CardDetailApi>('/api/cards', token, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accountId: Number(accountId),
-          cardType: typeUpper,
-        }),
+        body: JSON.stringify(body),
       });
       await load();
     },

@@ -80,8 +80,13 @@ public class AdminDashboardService {
             if (currency == CurrencyType.AZN) {
                 total = total.add(balance);
             } else {
-                BigDecimal rate = exchangeRateService.getExchangeRate(currency, CurrencyType.AZN);
-                total = total.add(balance.multiply(rate));
+                try {
+                    BigDecimal rate = exchangeRateService.getExchangeRate(currency, CurrencyType.AZN);
+                    total = total.add(balance.multiply(rate));
+                } catch (Exception e) {
+                    log.warn("Exchange rate unavailable for {} → AZN; using 1:1 fallback for dashboard total", currency, e);
+                    total = total.add(balance);
+                }
             }
         }
         return total.setScale(2, RoundingMode.HALF_UP);

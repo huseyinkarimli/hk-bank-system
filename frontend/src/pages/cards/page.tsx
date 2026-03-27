@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/empty-state';
 import { useAuth } from '@/context/auth-context';
 import { useCards } from '@/hooks/use-cards';
+import { isUserAdmin } from '@/lib/user-role';
 
 function lastFourFromPan(display: string): string {
   const digits = display.replace(/\D/g, '');
@@ -21,7 +22,7 @@ function lastFourFromPan(display: string): string {
 
 function CardsContent() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
   const {
     cards,
     accounts,
@@ -46,9 +47,13 @@ function CardsContent() {
     [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'Kart sahibi';
 
   const handleCreate = useCallback(
-    async (data: { cardType: 'debit' | 'credit' | 'virtual'; accountId: string }) => {
+    async (data: {
+      cardType: 'debit' | 'credit' | 'virtual';
+      accountId: string;
+      initialPin: string;
+    }) => {
       try {
-        await createCard(data.accountId, data.cardType);
+        await createCard(data.accountId, data.cardType, data.initialPin);
         toast.success('Kart yaradıldı');
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Kart yaradıla bilmədi');
@@ -142,8 +147,9 @@ function CardsContent() {
                         cardType={card.cardType}
                         cardholderName={card.cardholderName}
                         cardNumber={card.displayCardNumber}
+                        panDigits={card.panDigits}
                         expiryDate={card.expiryLabel}
-                        cvv="•••"
+                        cvv={card.cvv && /^\d{3,4}$/.test(card.cvv) ? card.cvv : '•••'}
                         balance={card.balance}
                         gradient={card.gradient}
                         pattern={card.pattern}
@@ -182,6 +188,8 @@ function CardsContent() {
                   cardId={selectedCard.id}
                   cardholderName={selectedCard.cardholderName}
                   cardNumber={selectedCard.displayCardNumber}
+                  panDigits={selectedCard.panDigits}
+                  cvvPlain={selectedCard.cvv}
                   cardType={selectedCard.cardType}
                   status={selectedCard.status}
                   iban={selectedCard.iban}

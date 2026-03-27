@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 
 /**
  * DTO for card information responses.
- * Card number is always masked, CVV and PIN are never returned.
+ * PAN is returned formatted for the card owner; masked variant included for display defaults.
+ * CVV is returned only when stored in plain form (demo); PIN is never returned.
  */
 @Data
 @Builder
@@ -22,6 +23,10 @@ public class CardResponse {
 
     private Long id;
     private String maskedCardNumber;
+    /** Full 16-digit PAN, spaced for display (owner-only endpoints). */
+    private String fullCardNumber;
+    /** Plain CVV when available (not returned for legacy bcrypt-stored values). */
+    private String cvv;
     private String cardHolder;
     private LocalDate expiryDate;
     private CardType cardType;

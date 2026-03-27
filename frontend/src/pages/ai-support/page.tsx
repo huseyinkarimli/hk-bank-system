@@ -4,6 +4,7 @@ import { ChatThread } from '@/components/ai-chat/ChatThread';
 import { InputBar } from '@/components/ai-chat/InputBar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/context/auth-context';
+import { isUserAdmin } from '@/lib/user-role';
 import { useAIChat } from '@/context/ai-chat-context';
 
 export default function AiSupportPage() {
@@ -19,7 +20,7 @@ export default function AiSupportPage() {
   } = useAIChat();
 
   return (
-    <DashboardLayout isAdmin={user?.role === 'ADMIN'}>
+    <DashboardLayout isAdmin={isUserAdmin(user?.role)}>
         <div className="max-w-4xl mx-auto space-y-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">AI Dəstək</h1>

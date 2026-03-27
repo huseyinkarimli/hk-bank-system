@@ -76,7 +76,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!token) return;
     setIsLoading(true);
     try {
-      const { data } = await api.get<{ data?: ApiNotification[] }>('/api/notifications');
+      const { data } = await api.get<{ data?: ApiNotification[] }>('/api/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const list = Array.isArray(data?.data) ? data.data : [];
       const mapped = list.map(mapApi);
       setNotifications(mapped);
@@ -119,7 +121,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const markAsRead = useCallback(async (id: string) => {
     if (!token) return;
-    await api.put(`/api/notifications/${id}/read`);
+    await api.put(`/api/notifications/${id}/read`, null, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     setNotifications((prev) => {
       const next = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
       prevUnreadRef.current = next.filter((n) => !n.read).length;
@@ -129,7 +133,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const markAllAsRead = useCallback(async () => {
     if (!token) return;
-    await api.put('/api/notifications/read-all');
+    await api.put('/api/notifications/read-all', null, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     prevUnreadRef.current = 0;
   }, [token]);

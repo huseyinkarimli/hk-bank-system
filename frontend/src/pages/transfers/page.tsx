@@ -1,10 +1,11 @@
 import { DashboardLayout } from '@/components/dashboard/layout';
 import { TransferFlow } from '@/components/transfers/TransferFlow';
 import { useAuth } from '@/context/auth-context';
+import { isUserAdmin } from '@/lib/user-role';
 
 function TransfersContent() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
 
   return (
     <DashboardLayout isAdmin={isAdmin}>

@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePrivacy } from '@/context/privacy-context';
 import { useCountUp } from '@/hooks/use-count-up';
@@ -7,7 +8,10 @@ import { useCountUp } from '@/hooks/use-count-up';
 export interface BankCard3DProps {
   cardType: 'debit' | 'credit' | 'virtual';
   cardholderName: string;
+  /** Masked or fallback label when full PAN is unavailable */
   cardNumber: string;
+  /** Raw 16 digits — enables show/hide full number */
+  panDigits?: string;
   expiryDate: string;
   cvv: string;
   balance?: number;
@@ -20,6 +24,7 @@ export function BankCard3D({
   cardType,
   cardholderName,
   cardNumber,
+  panDigits,
   expiryDate,
   cvv,
   balance,
@@ -28,6 +33,7 @@ export function BankCard3D({
   isExpanded = false,
 }: BankCard3DProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showFullPan, setShowFullPan] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [finePointer, setFinePointer] = useState(true);
@@ -77,6 +83,20 @@ export function BankCard3D({
     const cleaned = num.replace(/\s/g, '');
     if (!/^\d+$/.test(cleaned)) return num;
     return cleaned.replace(/(\d{4})(?=\d)/g, '$1 ');
+  };
+
+  const pan16 = panDigits?.replace(/\D/g, '') ?? '';
+  const hasRevealablePan = pan16.length === 16;
+
+  const displayPanLine = () => {
+    if (isPrivacyMode) return '•••• •••• •••• ••••';
+    if (hasRevealablePan) {
+      if (showFullPan) {
+        return pan16.replace(/(\d{4})(?=\d)/g, '$1 ');
+      }
+      return `${pan16.slice(0, 4)} **** **** ${pan16.slice(12)}`;
+    }
+    return maskCardNumber(cardNumber);
   };
 
   const balanceText =
@@ -137,9 +157,24 @@ export function BankCard3D({
 
           <div className="relative z-10 space-y-4">
             <div className="space-y-1">
-              <div className="text-white/50 text-xs">Kart nömrəsi</div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-white/50 text-xs">Kart nömrəsi</div>
+                {hasRevealablePan && !isPrivacyMode ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowFullPan((v) => !v);
+                    }}
+                    className="rounded-md p-1 text-white/70 hover:bg-white/10 hover:text-white"
+                    aria-label={showFullPan ? 'Mask card number' : 'Show full card number'}
+                  >
+                    {showFullPan ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                ) : null}
+              </div>
               <div className="text-white text-xl font-mono font-semibold tracking-wider">
-                {maskCardNumber(cardNumber)}
+                {displayPanLine()}
               </div>
             </div>
 
@@ -201,7 +236,10 @@ export function BankCard3D({
 
           {isExpanded && balance !== undefined && (
             <div className="relative z-10">
-              <div className="text-white/50 text-xs">Mövcud balans</div>
+              <div className="text-white/50 text-xs">Hesab balansı (IBAN)</div>
+              <div className="text-white/40 text-[10px] leading-tight mb-1">
+                Kartın öz balansı yoxdur — vəsait bağlı hesabınızdadır.
+              </div>
               <div
                 className="text-white text-2xl font-bold tabular-nums"
                 style={

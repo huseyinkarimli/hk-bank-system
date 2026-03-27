@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import { useNotifications } from '@/context/notification-context';
+import { isUserAdmin } from '@/lib/user-role';
 
 interface SidebarProps {
   isAdmin?: boolean;
@@ -39,7 +40,7 @@ export function Sidebar({
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const { unreadCount, bellBounce } = useNotifications();
-  const showAdminLink = user?.role === 'ADMIN' || isAdmin;
+  const showAdminLink = isUserAdmin(user?.role) || isAdmin;
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', to: '/dashboard', match: (p: string) => p === '/dashboard' },

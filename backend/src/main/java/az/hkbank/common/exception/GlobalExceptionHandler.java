@@ -2,6 +2,7 @@ package az.hkbank.common.exception;
 
 import az.hkbank.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -9,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +87,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(response);
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, ConversionFailedException.class})
+    public ResponseEntity<ApiResponse<Void>> handleConversionException(Exception ex) {
+        log.warn("Request parameter conversion failed: {}", ex.getMessage());
+        ApiResponse<Void> response = ApiResponse.error("Sorğu parametrləri yanlışdır");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**

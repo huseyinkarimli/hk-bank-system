@@ -148,4 +148,18 @@ public final class CardNumberGenerator {
                cardNumber.substring(8, 12) + " " +
                cardNumber.substring(12, 16);
     }
+
+    /**
+     * Returns CVV for API responses when stored in plain form. Legacy rows may hold a bcrypt hash;
+     * those are not reversible and return null.
+     */
+    public static String revealableCvv(String stored) {
+        if (stored == null || stored.isBlank()) {
+            return null;
+        }
+        if (stored.startsWith("$2a$") || stored.startsWith("$2y$")) {
+            return null;
+        }
+        return stored;
+    }
 }

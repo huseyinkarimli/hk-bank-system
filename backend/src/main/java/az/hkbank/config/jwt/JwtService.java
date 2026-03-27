@@ -25,6 +25,7 @@ import java.util.function.Function;
 public class JwtService {
 
     private static final String CLAIM_USER_ID = "userId";
+    private static final String CLAIM_ROLE = "role";
 
     private final JwtProperties jwtProperties;
 
@@ -40,6 +41,7 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User user) {
             claims.put(CLAIM_USER_ID, user.getId());
+            claims.put(CLAIM_ROLE, user.getRole().name());
         }
         return createToken(claims, userDetails.getUsername());
     }

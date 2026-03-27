@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 import { useCountUp } from '@/hooks/use-count-up';
 import { toast } from 'sonner';
 import { usePrivacy } from '@/context/privacy-context';
@@ -30,6 +31,8 @@ export interface CardDetailsPanelProps {
   cardId: string;
   cardholderName: string;
   cardNumber: string;
+  panDigits?: string;
+  cvvPlain?: string | null;
   cardType: 'debit' | 'credit' | 'virtual';
   status: string;
   iban: string;
@@ -58,6 +61,8 @@ export function CardDetailsPanel({
   cardId,
   cardholderName,
   cardNumber,
+  panDigits,
+  cvvPlain,
   cardType,
   status,
   iban,
@@ -73,6 +78,8 @@ export function CardDetailsPanel({
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [pinBusy, setPinBusy] = useState(false);
+  const [showFullPan, setShowFullPan] = useState(false);
+  const [showCvv, setShowCvv] = useState(false);
   const { isPrivacyMode, blurAmount } = usePrivacy();
   const balanceAnimated = useCountUp(balance, {
     duration: 1200,
@@ -84,9 +91,22 @@ export function CardDetailsPanel({
   const canBlock = st === 'ACTIVE';
   const canActivate = st === 'BLOCKED' || st === 'FROZEN';
 
+  const pan16 = panDigits?.replace(/\D/g, '') ?? '';
+  const hasRevealablePan = pan16.length === 16;
+  const hasCvv = !!(cvvPlain && /^\d{3,4}$/.test(cvvPlain));
+
   const maskCardNumber = (num: string) => {
     if (isPrivacyMode) return '•••• •••• •••• ••••';
     return num;
+  };
+
+  const displayPan = () => {
+    if (isPrivacyMode) return '•••• •••• •••• ••••';
+    if (hasRevealablePan) {
+      if (showFullPan) return pan16.replace(/(\d{4})(?=\d)/g, '$1 ');
+      return `${pan16.slice(0, 4)} **** **** ${pan16.slice(12)}`;
+    }
+    return maskCardNumber(cardNumber);
   };
 
   const maskIBAN = (ibanStr: string) => {
@@ -134,21 +154,34 @@ export function CardDetailsPanel({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-slate-400 mb-1">Kart nömrəsi</p>
-              <p className="text-sm font-mono font-semibold text-slate-100">
-                {maskCardNumber(cardNumber)}
-              </p>
+              <div className="flex items-center justify-between gap-1 mb-1">
+                <p className="text-xs text-slate-400">Kart nömrəsi</p>
+                {hasRevealablePan && !isPrivacyMode ? (
+                  <button
+                    type="button"
+                    className="text-slate-400 hover:text-white p-0.5 rounded"
+                    onClick={() => setShowFullPan((v) => !v)}
+                    aria-label="Toggle full card number"
+                  >
+                    {showFullPan ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                ) : null}
+              </div>
+              <p className="text-sm font-mono font-semibold text-slate-100">{displayPan()}</p>
             </div>
             <div>
               <p className="text-xs text-slate-400 mb-1">Kart növü</p>
               <p className="text-sm font-semibold text-slate-100 capitalize">{cardType}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">IBAN</p>
+              <p className="text-xs text-slate-400 mb-1">IBAN (hesab)</p>
               <p className="text-xs font-mono text-slate-200 break-all">{maskIBAN(iban)}</p>
+              <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                Balans hesabda (IBAN) saxlanılır; kart yalnız bu hesaba bağlıdır.
+              </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Mövcud balans</p>
+              <p className="text-xs text-slate-400 mb-1">Hesab balansı</p>
               <p
                 className="text-sm font-semibold text-slate-100 tabular-nums"
                 style={
@@ -162,6 +195,24 @@ export function CardDetailsPanel({
                   maximumFractionDigits: 2,
                 })}{' '}
                 AZN
+              </p>
+            </div>
+            <div className="col-span-2">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <p className="text-xs text-slate-400">CVV</p>
+                {hasCvv && !isPrivacyMode ? (
+                  <button
+                    type="button"
+                    className="text-slate-400 hover:text-white p-0.5 rounded"
+                    onClick={() => setShowCvv((v) => !v)}
+                    aria-label="Toggle CVV"
+                  >
+                    {showCvv ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                ) : null}
+              </div>
+              <p className="text-sm font-mono font-semibold text-slate-100">
+                {isPrivacyMode ? '•••' : hasCvv ? (showCvv ? cvvPlain : '•••') : '— (köhnə kartlar)'}
               </p>
             </div>
           </div>
@@ -222,7 +273,8 @@ export function CardDetailsPanel({
           <DialogHeader>
             <DialogTitle>PIN dəyişdirilməsi</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Cari PIN və yeni 4 rəqəmli PIN daxil edin.
+              Cari PIN və yeni 4 rəqəmli PIN daxil edin. Yeni kart üçün ilkin PIN adətən 0000 və ya kart
+              yaradarkən təyin etdiyiniz dəyərdir.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * Supports date range, type, and status filtering with pagination.
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionFilterRequest {

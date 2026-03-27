@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -85,7 +86,7 @@ public class CardServiceImpl implements CardService {
 
         String cardNumber = generateUniqueCardNumber();
         String cvv = CardNumberGenerator.generateCvv();
-        String pin = CardNumberGenerator.generatePin();
+        String pinPlain = resolveInitialPin(request.getInitialPin());
         String cardHolder = account.getUser().getFirstName() + " " + account.getUser().getLastName();
         LocalDate expiryDate = LocalDate.now().plusYears(CARD_VALIDITY_YEARS);
 
@@ -93,8 +94,8 @@ public class CardServiceImpl implements CardService {
                 .cardNumber(cardNumber)
                 .cardHolder(cardHolder.toUpperCase())
                 .expiryDate(expiryDate)
-                .cvv(passwordEncoder.encode(cvv))
-                .pin(passwordEncoder.encode(pin))
+                .cvv(cvv)
+                .pin(passwordEncoder.encode(pinPlain))
                 .cardType(request.getCardType())
                 .status(CardStatus.ACTIVE)
                 .account(account)
@@ -113,6 +114,13 @@ public class CardServiceImpl implements CardService {
         log.info("Card created successfully: {}", CardNumberGenerator.maskCardNumber(cardNumber));
 
         return cardMapper.toCardResponse(savedCard);
+    }
+
+    private static String resolveInitialPin(String initialPin) {
+        if (!StringUtils.hasText(initialPin)) {
+            return "0000";
+        }
+        return initialPin.trim();
     }
 
     @Override

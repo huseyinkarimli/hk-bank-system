@@ -185,14 +185,16 @@ public class TransactionServiceImpl implements TransactionService {
     public Page<TransactionSummaryResponse> getUserTransactions(Long userId, TransactionFilterRequest filter, Pageable pageable) {
         log.info("Fetching transactions for user: {} with filters", userId);
 
+        TransactionFilterRequest f = filter != null ? filter : TransactionFilterRequest.builder().build();
+
         Page<Transaction> transactions = transactionRepository.findByUserIdWithFilters(
                 userId,
-                filter.getType(),
-                filter.getStatus(),
-                filter.getStartDate(),
-                filter.getEndDate(),
-                filter.getMinAmount(),
-                filter.getMaxAmount(),
+                f.getType(),
+                f.getStatus(),
+                f.getStartDate(),
+                f.getEndDate(),
+                f.getMinAmount(),
+                f.getMaxAmount(),
                 pageable
         );
 

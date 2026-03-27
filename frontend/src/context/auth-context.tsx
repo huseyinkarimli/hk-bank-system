@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { setAuthToken } from '@/lib/axios';
+import { normalizeUserRole } from '@/lib/user-role';
 
 function parseJwtExpiryMs(token: string): number | null {
   try {
@@ -75,7 +76,7 @@ async function parseAuthJson(response: Response): Promise<{ token: string; user:
         firstName: nested.firstName ?? '',
         lastName: nested.lastName ?? '',
         phoneNumber: nested.phoneNumber,
-        role: nested.role,
+        role: normalizeUserRole(nested.role),
       }
     : {
         id: body.email ?? '',
@@ -83,7 +84,7 @@ async function parseAuthJson(response: Response): Promise<{ token: string; user:
         firstName: body.firstName ?? '',
         lastName: body.lastName ?? '',
         phoneNumber: body.phoneNumber,
-        role: body.role,
+        role: normalizeUserRole(body.role),
       };
 
   if (!token || !user.email) {
@@ -228,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firstName: data.firstName ?? '',
         lastName: data.lastName ?? '',
         phoneNumber: data.phoneNumber,
-        role: typeof data.role === 'string' ? data.role : data.role?.name ?? data.role,
+        role: normalizeUserRole(data.role),
       };
 
       setUser(next);

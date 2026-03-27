@@ -8,6 +8,7 @@ import { DashboardLayout } from '@/components/dashboard/layout';
 import { EmptyState } from '@/components/empty-state';
 import { useNotifications } from '@/context/notification-context';
 import { useAuth } from '@/context/auth-context';
+import { isUserAdmin } from '@/lib/user-role';
 
 const NOTIFICATION_ICONS: Record<string, string> = {
   TRANSACTION: '💸',
@@ -39,7 +40,7 @@ function formatTimeAgo(date: Date) {
 
 function NotificationsContent() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
   const {
     notifications,
     unreadCount,

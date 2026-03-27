@@ -26,6 +26,7 @@ import { useTheme } from '@/context/theme-context';
 import { usePrivacy } from '@/context/privacy-context';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/dashboard/layout';
+import { isUserAdmin, normalizeUserRole } from '@/lib/user-role';
 
 function ProfileContent() {
   const { user, logout } = useAuth();
@@ -108,7 +109,8 @@ function ProfileContent() {
   };
 
   const passwordStrength = calculatePasswordStrength(newPassword);
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = isUserAdmin(user?.role);
+  const roleLabel = normalizeUserRole(user?.role);
 
   return (
     <DashboardLayout isAdmin={isAdmin}>
@@ -139,10 +141,10 @@ function ProfileContent() {
             <div className="border-t border-slate-700 pt-4 space-y-3">
               <div>
                 <p className="text-xs font-medium text-slate-500 mb-1">Rol</p>
-                <Badge className={getRoleBadgeColor(user?.role)}>
-                  {user?.role === 'ADMIN'
+                <Badge className={getRoleBadgeColor(roleLabel)}>
+                  {roleLabel === 'ADMIN'
                     ? 'İnzibatçı'
-                    : user?.role === 'AI_SUPPORT'
+                    : roleLabel === 'AI_SUPPORT'
                       ? 'AI dəstəyi'
                       : 'İstifadəçi'}
                 </Badge>

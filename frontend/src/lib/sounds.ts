@@ -30,6 +30,27 @@ const CONFIG: Record<
 };
 
 let audioContext: AudioContext | null = null;
+let audioUnlocked = false;
+
+function ensureAudioUnlocked(ctx: AudioContext): void {
+  if (audioUnlocked) return;
+  if (ctx.state === 'suspended') {
+    void ctx.resume().catch(() => {});
+  }
+  audioUnlocked = true;
+}
+
+if (typeof window !== 'undefined') {
+  const unlock = () => {
+    const ctx = audioContext;
+    if (ctx && ctx.state === 'suspended') {
+      void ctx.resume().catch(() => {});
+    }
+    audioUnlocked = true;
+  };
+  window.addEventListener('click', unlock, { once: true, capture: true });
+  window.addEventListener('keydown', unlock, { once: true, capture: true });
+}
 
 function getContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -50,6 +71,7 @@ function play(kind: OscillatorKind): void {
   try {
     const ctx = getContext();
     if (!ctx) return;
+    ensureAudioUnlocked(ctx);
     const cfg = CONFIG[kind];
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();

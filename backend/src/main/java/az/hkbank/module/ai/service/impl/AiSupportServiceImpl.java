@@ -87,7 +87,14 @@ public class AiSupportServiceImpl implements AiSupportService {
 
         List<ChatMessage> history = chatMessageRepository.findTop10BySessionIdOrderByCreatedAtDesc(session.getId());
 
-        String aiResponse = geminiApiService.sendMessage(history, message);
+        String aiResponse;
+        try {
+            aiResponse = geminiApiService.sendMessage(history, message);
+        } catch (Exception ex) {
+            log.warn("Gemini call failed, returning fallback assistant message: {}", ex.getMessage());
+            aiResponse = "Üzr istəyirik, AI köməkçisi hazırda əlçatan deyil. Ümumi suallar üçün dəstək xəttimizlə "
+                    + "əlaqə saxlayın və ya bir az sonra yenidən cəhd edin.";
+        }
 
         ChatMessage assistantMessage = ChatMessage.builder()
                 .session(session)
