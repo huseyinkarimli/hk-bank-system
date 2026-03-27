@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -15,6 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  refreshProfile: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -34,12 +36,14 @@ type AuthPayload = {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  role?: string;
   user?: {
     id?: string;
     email?: string;
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
+    role?: string;
   };
 };
 
@@ -56,6 +60,7 @@ async function parseAuthJson(response: Response): Promise<{ token: string; user:
         firstName: nested.firstName ?? '',
         lastName: nested.lastName ?? '',
         phoneNumber: nested.phoneNumber,
+        role: nested.role,
       }
     : {
         id: body.email ?? '',
@@ -63,6 +68,7 @@ async function parseAuthJson(response: Response): Promise<{ token: string; user:
         firstName: body.firstName ?? '',
         lastName: body.lastName ?? '',
         phoneNumber: body.phoneNumber,
+        role: body.role,
       };
 
   if (!token || !user.email) {
@@ -159,6 +165,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('auth_user');
   };
 
+  const refreshProfile = useCallback(async () => {
+    const activeToken = token ?? localStorage.getItem('auth_token');
+    if (!activeToken) return;
+
+    try {
+      const response = await fetch('/api/users/me', {
+        headers: { Authorization: `Bearer ${activeToken}` },
+      });
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      const data = payload?.data ?? payload;
+      if (!data?.email) return;
+
+      const next: User = {
+        id: String(data.id ?? data.email),
+        email: data.email,
+        firstName: data.firstName ?? '',
+        lastName: data.lastName ?? '',
+        phoneNumber: data.phoneNumber,
+        role: typeof data.role === 'string' ? data.role : data.role?.name ?? data.role,
+      };
+
+      setUser(next);
+      localStorage.setItem('auth_user', JSON.stringify(next));
+    } catch {
+      /* keep cached user */
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!token || isLoading) return;
+    void refreshProfile();
+  }, [token, isLoading, refreshProfile]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -168,6 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        refreshProfile,
         isAuthenticated: !!user,
       }}
     >
