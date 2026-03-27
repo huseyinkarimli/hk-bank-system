@@ -26,7 +26,8 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const showAdminLink = user?.role === 'ADMIN' || isAdmin;
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', to: '/dashboard' },
@@ -38,9 +39,7 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
     { icon: Bell, label: 'Notifications', to: '/dashboard', badge: 3 },
   ];
 
-  const adminItems = isAdmin
-    ? [{ icon: Settings, label: 'Admin Panel', to: '/admin' }]
-    : [];
+  const adminItems = showAdminLink ? [{ icon: Settings, label: 'Admin Panel', to: '/admin' }] : [];
 
   const handleLogout = () => {
     logout();
