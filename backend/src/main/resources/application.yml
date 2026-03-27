@@ -1,0 +1,4 @@
+app:
+  admin:
+    email: ${ADMIN_EMAIL:admin@hkbank.az}
+    password: ${ADMIN_PASSWORD:Admin123!}

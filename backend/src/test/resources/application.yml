@@ -23,6 +23,9 @@ app:
   jwt:
     secret: test-secret-key-for-unit-tests-only-minimum-256-bits-required
     expiration: 86400000
+  admin:
+    email: ${ADMIN_EMAIL:admin@hkbank.az}
+    password: ${ADMIN_PASSWORD:Admin123!}
   ai:
     gemini:
       api-key: test-gemini-api-key

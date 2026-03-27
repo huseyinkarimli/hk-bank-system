@@ -49,6 +49,43 @@ Professional Digital Banking & Transaction Engine built with modern Java technol
 - **Docker** and **Docker Compose**
 - **Maven 3.8+** (optional, wrapper included)
 
+## 🚀 Sürətli Başlanğıc
+
+### Tələblər
+- Docker Desktop
+- Git
+
+### Başlatmaq
+```bash
+# 1. Layihəni klonla
+git clone https://github.com/huseyinkarimli/hk-bank-system.git
+cd hk-bank-system
+
+# 2. .env faylını yarat
+cp .env.example .env
+# .env faylını açıb API açarlarını daxil et
+
+# 3. Bir əmrlə başlat
+docker-compose up -d --build
+
+# 4. Hazır!
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8080
+# pgAdmin: http://localhost:5050
+# Swagger: http://localhost:8080/swagger-ui.html
+```
+
+### Dayandırmaq
+```bash
+docker-compose down
+```
+
+### Logları izləmək
+```bash
+docker-compose logs -f backend
+docker-compose logs -f frontend
+```
+
 ## 🛠️ Quick Start
 
 ### 1. Clone Repository
@@ -77,17 +114,19 @@ GEMINI_API_KEY=your_gemini_api_key
 ### 3. Start Services
 
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
 This will start:
 - PostgreSQL database on port 5432
 - PgAdmin on port 5050
 - Backend API on port 8080
+- Frontend (nginx + React) on port 3000
 
 ### 4. Access Services
 
-- **Swagger UI**: http://localhost:8080/swagger-ui/index.html
+- **Frontend**: http://localhost:3000
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **Health Check**: http://localhost:8080/actuator/health
 - **PgAdmin**: http://localhost:5050
 

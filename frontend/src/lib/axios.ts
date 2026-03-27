@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { axiosLoadingDone, axiosLoadingStart } from '@/lib/axios-loading';
 import { playError, playTransfer } from '@/lib/sounds';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export const api = axios.create({
   baseURL: BASE_URL,
