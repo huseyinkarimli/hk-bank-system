@@ -110,4 +110,43 @@
   .animate-bank-card-holographic-sweep {
     animation: bank-card-holographic-sweep 3s ease-in-out infinite;
   }
+
+  /* AI Support chat — purple glass scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgb(168 85 247 / 0.85), rgb(99 102 241 / 0.85));
+    border-radius: 9999px;
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(168 85 247 / 0.75) rgba(255, 255, 255, 0.06);
+  }
+
+  @keyframes ai-chat-mesh-drift {
+    0%,
+    100% {
+      background-position: 0% 40%, 100% 60%, 50% 0%;
+    }
+    33% {
+      background-position: 80% 20%, 20% 80%, 30% 70%;
+    }
+    66% {
+      background-position: 40% 90%, 60% 10%, 70% 40%;
+    }
+  }
+
+  .ai-chat-mesh-bg {
+    background-image:
+      radial-gradient(ellipse 120% 90% at 18% 28%, rgba(139, 92, 246, 0.16), transparent 58%),
+      radial-gradient(ellipse 100% 80% at 88% 72%, rgba(59, 130, 246, 0.14), transparent 52%),
+      radial-gradient(ellipse 90% 70% at 52% 100%, rgba(34, 211, 238, 0.1), transparent 48%);
+    background-size: 220% 220%;
+    animation: ai-chat-mesh-drift 32s ease-in-out infinite;
+  }
 }

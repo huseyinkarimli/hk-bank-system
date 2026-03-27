@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
   ArrowLeftRight,
   Banknote,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
     { icon: CreditCard, label: 'Cards', to: '/cards' },
     { icon: ArrowLeftRight, label: 'Köçürmə', to: '/transfer' },
     { icon: Banknote, label: 'Ödənişlər', to: '/payments' },
+    { icon: MessageCircle, label: 'AI Dəstək', to: '/ai-support' },
     { icon: TrendingUp, label: 'Investments', to: '/dashboard' },
     { icon: Bell, label: 'Notifications', to: '/dashboard', badge: 3 },
   ];
