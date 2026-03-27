@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -23,4 +24,6 @@ public class TransactionFilterRequest {
     private LocalDateTime endDate;
     private TransactionType type;
     private TransactionStatus status;
+    private BigDecimal minAmount;
+    private BigDecimal maxAmount;
 }

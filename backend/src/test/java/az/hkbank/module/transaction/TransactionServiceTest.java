@@ -15,7 +15,9 @@ import az.hkbank.module.card.repository.CardRepository;
 import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.transaction.dto.P2PCardTransferRequest;
 import az.hkbank.module.transaction.dto.P2PIbanTransferRequest;
+import az.hkbank.module.transaction.dto.TransactionFilterRequest;
 import az.hkbank.module.transaction.dto.TransactionResponse;
+import az.hkbank.module.transaction.dto.TransactionSummaryResponse;
 import az.hkbank.module.transaction.entity.Transaction;
 import az.hkbank.module.transaction.entity.TransactionStatus;
 import az.hkbank.module.transaction.entity.TransactionType;
@@ -33,10 +35,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -476,5 +483,155 @@ class TransactionServiceTest {
         assertEquals("TXN12345678", response.getReferenceNumber());
 
         verify(transactionRepository).findById(1L);
+    }
+
+    @Test
+    void getUserTransactions_FilterByType_ReturnsFiltered() {
+        TransactionFilterRequest filter = TransactionFilterRequest.builder()
+                .type(TransactionType.P2P_CARD)
+                .build();
+        Pageable pageable = PageRequest.of(0, 20);
+        TransactionSummaryResponse summary = TransactionSummaryResponse.builder()
+                .id(1L)
+                .referenceNumber("TXN12345678")
+                .type(TransactionType.P2P_CARD)
+                .status(TransactionStatus.SUCCESS)
+                .amount(new BigDecimal("100.00"))
+                .sourceCurrency(CurrencyType.AZN)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByUserIdWithFilters(
+                eq(1L),
+                eq(TransactionType.P2P_CARD),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(transaction)));
+        when(transactionMapper.toTransactionSummaryResponse(transaction)).thenReturn(summary);
+
+        Page<TransactionSummaryResponse> page = transactionService.getUserTransactions(1L, filter, pageable);
+
+        assertEquals(1, page.getContent().size());
+        assertEquals(TransactionType.P2P_CARD, page.getContent().getFirst().getType());
+        verify(transactionRepository).findByUserIdWithFilters(
+                eq(1L),
+                eq(TransactionType.P2P_CARD),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                eq(pageable));
+    }
+
+    @Test
+    void getUserTransactions_FilterByStatus_ReturnsFiltered() {
+        TransactionFilterRequest filter = TransactionFilterRequest.builder()
+                .status(TransactionStatus.SUCCESS)
+                .build();
+        Pageable pageable = PageRequest.of(0, 10);
+        TransactionSummaryResponse summary = TransactionSummaryResponse.builder()
+                .id(1L)
+                .referenceNumber("TXN12345678")
+                .type(TransactionType.P2P_CARD)
+                .status(TransactionStatus.SUCCESS)
+                .amount(new BigDecimal("100.00"))
+                .sourceCurrency(CurrencyType.AZN)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByUserIdWithFilters(
+                eq(1L),
+                isNull(),
+                eq(TransactionStatus.SUCCESS),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(transaction)));
+        when(transactionMapper.toTransactionSummaryResponse(transaction)).thenReturn(summary);
+
+        Page<TransactionSummaryResponse> page = transactionService.getUserTransactions(1L, filter, pageable);
+
+        assertEquals(1, page.getContent().size());
+        assertEquals(TransactionStatus.SUCCESS, page.getContent().getFirst().getStatus());
+    }
+
+    @Test
+    void getUserTransactions_FilterByAmountRange_ReturnsFiltered() {
+        TransactionFilterRequest filter = TransactionFilterRequest.builder()
+                .minAmount(new BigDecimal("50.00"))
+                .maxAmount(new BigDecimal("200.00"))
+                .build();
+        Pageable pageable = PageRequest.of(0, 5);
+        TransactionSummaryResponse summary = TransactionSummaryResponse.builder()
+                .id(1L)
+                .referenceNumber("TXN12345678")
+                .type(TransactionType.P2P_CARD)
+                .status(TransactionStatus.SUCCESS)
+                .amount(new BigDecimal("100.00"))
+                .sourceCurrency(CurrencyType.AZN)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByUserIdWithFilters(
+                eq(1L),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                eq(new BigDecimal("50.00")),
+                eq(new BigDecimal("200.00")),
+                eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(transaction)));
+        when(transactionMapper.toTransactionSummaryResponse(transaction)).thenReturn(summary);
+
+        Page<TransactionSummaryResponse> page = transactionService.getUserTransactions(1L, filter, pageable);
+
+        assertEquals(1, page.getContent().size());
+        assertEquals(new BigDecimal("100.00"), page.getContent().getFirst().getAmount());
+    }
+
+    @Test
+    void getUserTransactions_FilterByDateAndType_ReturnsFiltered() {
+        LocalDateTime start = LocalDateTime.now().minusDays(7);
+        LocalDateTime end = LocalDateTime.now();
+        TransactionFilterRequest filter = TransactionFilterRequest.builder()
+                .startDate(start)
+                .endDate(end)
+                .type(TransactionType.P2P_IBAN)
+                .build();
+        Pageable pageable = PageRequest.of(0, 15);
+        TransactionSummaryResponse summary = TransactionSummaryResponse.builder()
+                .id(1L)
+                .referenceNumber("TXN12345678")
+                .type(TransactionType.P2P_IBAN)
+                .status(TransactionStatus.SUCCESS)
+                .amount(new BigDecimal("100.00"))
+                .sourceCurrency(CurrencyType.AZN)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByUserIdWithFilters(
+                eq(1L),
+                eq(TransactionType.P2P_IBAN),
+                isNull(),
+                eq(start),
+                eq(end),
+                isNull(),
+                isNull(),
+                eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(transaction)));
+        when(transactionMapper.toTransactionSummaryResponse(transaction)).thenReturn(summary);
+
+        Page<TransactionSummaryResponse> page = transactionService.getUserTransactions(1L, filter, pageable);
+
+        assertEquals(1, page.getContent().size());
+        assertEquals(TransactionType.P2P_IBAN, page.getContent().getFirst().getType());
     }
 }

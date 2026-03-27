@@ -12,6 +12,7 @@ import az.hkbank.module.notification.entity.NotificationType;
 import az.hkbank.module.notification.service.NotificationService;
 import az.hkbank.module.user.mapper.UserMapper;
 import az.hkbank.module.user.repository.UserRepository;
+import az.hkbank.module.user.service.RefreshTokenService;
 import az.hkbank.module.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final AuditService auditService;
     private final NotificationService notificationService;
     private final HttpServletRequest httpServletRequest;
@@ -62,6 +64,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User savedUser = userRepository.save(user);
 
         String token = jwtService.generateToken(savedUser);
+        String refreshToken = refreshTokenService.generateRefreshToken(savedUser);
 
         auditService.log(
                 savedUser.getId(),
@@ -74,6 +77,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .email(savedUser.getEmail())
                 .firstName(savedUser.getFirstName())
@@ -99,6 +103,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         String token = jwtService.generateToken(user);
+        String refreshToken = refreshTokenService.generateRefreshToken(user);
 
         String ipAddress = getClientIpAddress();
 
@@ -120,6 +125,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .email(user.getEmail())
                 .firstName(user.getFirstName())

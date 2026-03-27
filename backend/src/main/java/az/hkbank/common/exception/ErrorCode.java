@@ -12,7 +12,9 @@ public enum ErrorCode {
     USER_NOT_FOUND(404, "İstifadəçi tapılmadı"),
     USER_ALREADY_EXISTS(409, "Bu email artıq qeydiyyatdan keçib"),
     INVALID_CREDENTIALS(401, "Email və ya şifrə yanlışdır"),
-    
+    INVALID_TOKEN(401, "Token etibarsızdır"),
+    TOKEN_EXPIRED(401, "Token müddəti bitmişdir"),
+
     ACCOUNT_NOT_FOUND(404, "Hesab tapılmadı"),
     ACCOUNT_ALREADY_EXISTS(409, "Bu valyuta üçün hesab artıq mövcuddur"),
     ACCOUNT_BLOCKED(403, "Hesab bloklanıb"),

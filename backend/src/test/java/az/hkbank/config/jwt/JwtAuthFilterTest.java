@@ -2,6 +2,8 @@ package az.hkbank.config.jwt;
 
 import az.hkbank.module.user.entity.Role;
 import az.hkbank.module.user.entity.User;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,8 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -71,5 +76,39 @@ class JwtAuthFilterTest {
         verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
         verify(jwtService, never()).isTokenValid(any(), any());
         verify(filterChain, never()).doFilter(any(), any());
+    }
+
+    @Test
+    void expiredToken_Returns401WithJson() throws Exception {
+        SecurityContextHolder.clearContext();
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer expired");
+        when(jwtService.extractEmail("expired")).thenThrow(mock(ExpiredJwtException.class));
+
+        StringWriter sw = new StringWriter();
+        when(response.getWriter()).thenReturn(new PrintWriter(sw));
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(filterChain, never()).doFilter(any(), any());
+        assertTrue(sw.toString().contains("Token müddəti bitmişdir"));
+    }
+
+    @Test
+    void malformedToken_Returns401WithJson() throws Exception {
+        SecurityContextHolder.clearContext();
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer bad");
+        when(jwtService.extractEmail("bad")).thenThrow(mock(JwtException.class));
+
+        StringWriter sw = new StringWriter();
+        when(response.getWriter()).thenReturn(new PrintWriter(sw));
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(filterChain, never()).doFilter(any(), any());
+        assertTrue(sw.toString().contains("Token etibarsızdır"));
     }
 }

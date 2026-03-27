@@ -1,6 +1,8 @@
 package az.hkbank.module.transaction.repository;
 
 import az.hkbank.module.transaction.entity.Transaction;
+import az.hkbank.module.transaction.entity.TransactionStatus;
+import az.hkbank.module.transaction.entity.TransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -146,4 +148,27 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.createdAt BETWEEN :from AND :to AND t.status = 'SUCCESS'")
     BigDecimal sumAmountByCreatedAtBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT t FROM Transaction t
+            WHERE ((t.senderAccount IS NOT NULL AND t.senderAccount.user.id = :userId)
+            OR (t.receiverAccount IS NOT NULL AND t.receiverAccount.user.id = :userId))
+            AND (:type IS NULL OR t.type = :type)
+            AND (:status IS NULL OR t.status = :status)
+            AND (:startDate IS NULL OR t.createdAt >= :startDate)
+            AND (:endDate IS NULL OR t.createdAt <= :endDate)
+            AND (:minAmount IS NULL OR t.amount >= :minAmount)
+            AND (:maxAmount IS NULL OR t.amount <= :maxAmount)
+            ORDER BY t.createdAt DESC
+            """)
+    Page<Transaction> findByUserIdWithFilters(
+            @Param("userId") Long userId,
+            @Param("type") TransactionType type,
+            @Param("status") TransactionStatus status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("minAmount") BigDecimal minAmount,
+            @Param("maxAmount") BigDecimal maxAmount,
+            Pageable pageable
+    );
 }

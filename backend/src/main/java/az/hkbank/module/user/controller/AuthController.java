@@ -1,9 +1,14 @@
 package az.hkbank.module.user.controller;
 
 import az.hkbank.common.response.ApiResponse;
+import az.hkbank.config.jwt.JwtService;
 import az.hkbank.module.user.dto.AuthResponse;
 import az.hkbank.module.user.dto.LoginRequest;
+import az.hkbank.module.user.dto.RefreshTokenRequest;
 import az.hkbank.module.user.dto.RegisterRequest;
+import az.hkbank.module.user.entity.RefreshToken;
+import az.hkbank.module.user.entity.User;
+import az.hkbank.module.user.service.RefreshTokenService;
 import az.hkbank.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * Registers a new user in the system.
@@ -87,5 +94,41 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse authResponse = userService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", authResponse));
+    }
+
+    /**
+     * Issues a new access token and refresh token using a valid refresh token.
+     */
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token", description = "Rotates refresh token and returns new JWT pair")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Tokens refreshed successfully",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired refresh token"
+            )
+    })
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        RefreshToken validated = refreshTokenService.validateRefreshToken(request.getRefreshToken());
+        User user = validated.getUser();
+
+        String accessToken = jwtService.generateToken(user);
+        String newRefresh = refreshTokenService.generateRefreshToken(user);
+
+        AuthResponse authResponse = AuthResponse.builder()
+                .token(accessToken)
+                .refreshToken(newRefresh)
+                .tokenType("Bearer")
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(authResponse));
     }
 }

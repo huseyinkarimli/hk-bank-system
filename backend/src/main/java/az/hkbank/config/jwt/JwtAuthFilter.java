@@ -1,8 +1,10 @@
 package az.hkbank.config.jwt;
 
+import az.hkbank.module.user.entity.User;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import az.hkbank.module.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 /**
  * JWT authentication filter that processes incoming requests.
@@ -44,32 +47,50 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String jwt = authHeader.substring(BEARER_PREFIX.length());
-        final String userEmail = jwtService.extractEmail(jwt);
+        try {
+            final String jwt = authHeader.substring(BEARER_PREFIX.length());
+            final String userEmail = jwtService.extractEmail(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-            Long userId = jwtService.extractUserId(jwt);
-            if (userId == null && userDetails instanceof User user) {
-                userId = user.getId();
-            }
-            if (userId != null && jwtService.isUserBanned(userId)) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
+                Long userId = jwtService.extractUserId(jwt);
+                if (userId == null && userDetails instanceof User user) {
+                    userId = user.getId();
+                }
+                if (userId != null && jwtService.isUserBanned(userId)) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            filterChain.doFilter(request, response);
+        } catch (ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("""
+                    {"success":false,"message":"Token müddəti bitmişdir",
+                     "data":null,"timestamp":"%s"}
+                    """.formatted(LocalDateTime.now()));
+            return;
+        } catch (JwtException | IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("""
+                    {"success":false,"message":"Token etibarsızdır",
+                     "data":null,"timestamp":"%s"}
+                    """.formatted(LocalDateTime.now()));
+            return;
         }
-
-        filterChain.doFilter(request, response);
     }
 }

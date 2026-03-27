@@ -2,12 +2,16 @@ package az.hkbank.config;
 
 import az.hkbank.module.audit.service.AuditAction;
 import az.hkbank.module.audit.service.AuditService;
+import az.hkbank.module.user.repository.RefreshTokenRepository;
 import az.hkbank.module.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 /**
  * Configuration for scheduled tasks.
@@ -21,6 +25,7 @@ public class ScheduledTasksConfig {
 
     private final AuditService auditService;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     /**
      * Daily task to reset transaction limit counters.
@@ -74,5 +79,16 @@ public class ScheduledTasksConfig {
         } catch (Exception e) {
             log.error("Failed to log system health", e);
         }
+    }
+
+    /**
+     * Removes expired refresh tokens from storage. Runs daily at 03:00.
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    @Transactional
+    public void cleanupExpiredRefreshTokens() {
+        log.info("Starting refresh token cleanup");
+        refreshTokenRepository.deleteByExpiresAtBefore(LocalDateTime.now());
+        log.info("Refresh token cleanup completed");
     }
 }

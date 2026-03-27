@@ -12,6 +12,7 @@ import az.hkbank.module.user.entity.Role;
 import az.hkbank.module.user.entity.User;
 import az.hkbank.module.user.mapper.UserMapper;
 import az.hkbank.module.user.repository.UserRepository;
+import az.hkbank.module.user.service.RefreshTokenService;
 import az.hkbank.module.user.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +47,9 @@ class UserServiceTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @Mock
     private AuditService auditService;
@@ -100,12 +104,14 @@ class UserServiceTest {
         when(passwordEncoder.encode(registerRequest.getPassword())).thenReturn("$2a$10$encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(jwtService.generateToken(any(User.class))).thenReturn("jwt-token");
+        when(refreshTokenService.generateRefreshToken(any(User.class))).thenReturn("refresh-token");
         when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
 
         AuthResponse response = userService.register(registerRequest);
 
         assertNotNull(response);
         assertEquals("jwt-token", response.getToken());
+        assertEquals("refresh-token", response.getRefreshToken());
         assertEquals("Bearer", response.getTokenType());
         assertEquals("huseyin.karimli@hkbank.az", response.getEmail());
         assertEquals("Huseyin", response.getFirstName());
@@ -116,6 +122,7 @@ class UserServiceTest {
         verify(userRepository).existsByPhoneNumber(registerRequest.getPhoneNumber());
         verify(userRepository).save(any(User.class));
         verify(jwtService).generateToken(any(User.class));
+        verify(refreshTokenService).generateRefreshToken(any(User.class));
         verify(auditService).log(eq(1L), anyString(), anyString(), anyString());
     }
 
@@ -156,6 +163,7 @@ class UserServiceTest {
         when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(refreshTokenService.generateRefreshToken(user)).thenReturn("refresh-token");
         when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
         doNothing().when(notificationService).createNotification(anyLong(), any(), anyString(), anyString());
 
@@ -163,12 +171,14 @@ class UserServiceTest {
 
         assertNotNull(response);
         assertEquals("jwt-token", response.getToken());
+        assertEquals("refresh-token", response.getRefreshToken());
         assertEquals("Bearer", response.getTokenType());
         assertEquals("huseyin.karimli@hkbank.az", response.getEmail());
 
         verify(userRepository).findByEmail(loginRequest.getEmail());
         verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPassword());
         verify(jwtService).generateToken(user);
+        verify(refreshTokenService).generateRefreshToken(user);
         verify(auditService).log(eq(1L), anyString(), anyString(), anyString());
     }
 
