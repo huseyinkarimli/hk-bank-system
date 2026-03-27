@@ -70,6 +70,20 @@
   }
 }
 
+@layer components {
+  .glass {
+    @apply bg-card/40 backdrop-blur-xl border border-border/30 rounded-lg;
+  }
+
+  .glass-sm {
+    @apply bg-card/50 backdrop-blur-lg border border-border/20 rounded-md;
+  }
+
+  .glass-lg {
+    @apply bg-card/30 backdrop-blur-2xl border border-border/20 rounded-2xl;
+  }
+}
+
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -77,5 +91,23 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  @keyframes bank-card-holographic-sweep {
+    0% {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+    40% {
+      opacity: 0.22;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-bank-card-holographic-sweep {
+    animation: bank-card-holographic-sweep 3s ease-in-out infinite;
   }
 }

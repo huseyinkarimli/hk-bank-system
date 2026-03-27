@@ -142,7 +142,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Dazil ol'}
+              {isLoading ? 'Daxil olunur…' : 'Daxil ol'}
             </motion.button>
           </form>
 
